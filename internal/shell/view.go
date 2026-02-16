@@ -26,11 +26,35 @@ var (
 	promptLabel  = lipgloss.NewStyle().Foreground(ui.ColorText).Bold(true)
 
 	// ── Banner ──
-	bannerArt  = lipgloss.NewStyle().Foreground(ui.ColorSecondary)
 	bannerName = lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true)
-	bannerVer  = lipgloss.NewStyle().Foreground(ui.ColorMuted)
-	bannerDesc = lipgloss.NewStyle().Foreground(dim)
-	bannerHint = lipgloss.NewStyle().Foreground(dim).Italic(true)
+	bannerDesc = lipgloss.NewStyle().Foreground(ui.ColorTextDim).Italic(true)
+
+	// ── Welcome Screen ──
+	welcomeCardBorderCleanup = lipgloss.NewStyle().
+					Border(lipgloss.RoundedBorder()).
+					BorderForeground(ui.ColorSuccess).
+					Padding(1, 2)
+	welcomeCardBorderSystem = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(ui.ColorInfo).
+				Padding(1, 2)
+	welcomeCardBorderTools = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(ui.ColorViolet).
+				Padding(1, 2)
+	welcomeTipsBox = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(ui.ColorBorder).
+			Padding(0, 2)
+	welcomeCardTitle    = lipgloss.NewStyle().Bold(true)
+	welcomeCmdName      = lipgloss.NewStyle().Foreground(ui.ColorText)
+	welcomeCmdIcon      = lipgloss.NewStyle().Foreground(ui.ColorMuted)
+	welcomeTipLabel     = lipgloss.NewStyle().Foreground(accent).Bold(true)
+	welcomeTipCmd       = lipgloss.NewStyle().Foreground(ui.ColorPrimary)
+	welcomeTipDesc      = lipgloss.NewStyle().Foreground(ui.ColorTextDim)
+	welcomeHostname     = lipgloss.NewStyle().Foreground(ui.ColorText).Bold(true)
+	welcomeAdminBadge   = lipgloss.NewStyle().Foreground(ui.ColorWarning).Bold(true)
+	welcomeVersionBadge = lipgloss.NewStyle().Foreground(ui.ColorMuted)
 
 	// ── Completions Popup ──
 	compBorder       = lipgloss.NewStyle().Foreground(ui.ColorBorder)
@@ -54,6 +78,27 @@ var (
 	statusSep   = lipgloss.NewStyle().Foreground(ui.ColorBorder)
 	statusAdmin = lipgloss.NewStyle().Foreground(ui.ColorWarning).Bold(true)
 )
+
+// ─── Welcome Mascot & Brand Art ──────────────────────────────────────────────
+// ASCII mascot matching the SVG logo (assets/logo.svg) and the large wordmark.
+// Kept local to the shell package so it's self-contained.
+
+var welcomeMascotLines = []string{
+	`    ╭●╮       ╭●╮    `,
+	`    ╰┬╯╭─────╮╰┬╯    `,
+	`     ╰─│ ◉ ◉ │─╯     `,
+	`       │ ╭─╮ │        `,
+	`       │ ╰▽╯ │        `,
+	`       ╰─────╯        `,
+}
+
+var welcomeBrandLines = []string{
+	`  ____                  __        ___       `,
+	` |  _ \ _   _ _ __ ___ \ \      / (_)_ __  `,
+	` | |_) | | | | '__/ _ \ \ \ /\ / /| | '_ \ `,
+	` |  __/| |_| | | |  __/  \ V  V / | | | | |`,
+	` |_|    \__,_|_|  \___|   \_/\_/  |_|_| |_|`,
+}
 
 // cmdIcons maps command names to their crush-style Unicode glyphs for the completions popup.
 var cmdIcons = map[string]string{
@@ -83,13 +128,17 @@ func (m ShellModel) View() string {
 
 	var s strings.Builder
 
+	showBanner := len(m.OutputLines) <= 1
+
 	// ── Welcome Banner (only on first launch, before any output) ──
-	if len(m.OutputLines) <= 1 {
+	if showBanner {
 		s.WriteString(m.renderBanner(w))
 	}
 
-	// ── Output Viewport ──
-	s.WriteString(m.renderOutput(w))
+	// ── Output Viewport (skip when banner owns the screen) ──
+	if !showBanner {
+		s.WriteString(m.renderOutput(w))
+	}
 
 	// ── Completions Popup (overlays above prompt) ──
 	if m.completions.IsOpen() {
@@ -110,35 +159,214 @@ func (m ShellModel) View() string {
 }
 
 // ─── Banner ──────────────────────────────────────────────────────────────────
+// Full-screen welcome experience. Vertically centered, fills the terminal with
+// brand art, command cards, system info, and quick-start tips.
 
 func (m ShellModel) renderBanner(w int) string {
-	var s strings.Builder
-
-	s.WriteString("\n")
-
-	// Refined 3-line mole ASCII art in accent color.
-	art := []string{
-		`  ◆ ─── ◆`,
-		`  │ ◉ ◉ │`,
-		`  ╰─▽──╯`,
-	}
-	for _, line := range art {
-		s.WriteString("  " + bannerArt.Render(line) + "\n")
+	// Reserve lines for the chrome below the banner:
+	// separator (1) + prompt (1) + status bar newline+content+newline (3)
+	const chromeLines = 5
+	availH := m.Height - chromeLines
+	if availH < 10 {
+		availH = 10
 	}
 
-	s.WriteString("\n")
-	s.WriteString("  " + bannerName.Render("PureWin") +
-		"  " + bannerVer.Render(m.Version) + "\n")
-	s.WriteString("  " + bannerDesc.Render("Deep clean and optimize your Windows.") + "\n")
-	s.WriteString("\n")
-	s.WriteString("  " + bannerHint.Render("Type / for commands · /help for details") + "\n")
-	s.WriteString("\n")
+	// ── Compact mode for tiny terminals ──
+	if m.Height < 20 || w < 55 {
+		return m.renderBannerCompact(w, availH)
+	}
 
-	// Thin separator using SectionHeader style.
-	s.WriteString("  " + ui.SectionHeader("", w-4) + "\n")
-	s.WriteString("\n")
+	// ── Build content blocks ──
+	brandBlock := m.renderWelcomeBrand()
+	infoBar := m.renderWelcomeInfoBar()
+	cardsBlock := m.renderWelcomeCards(w)
+	tipsBlock := m.renderWelcomeTips(w)
 
-	return s.String()
+	// Stack vertically, center-aligned.
+	content := lipgloss.JoinVertical(lipgloss.Center,
+		brandBlock,
+		"",
+		infoBar,
+		"",
+		cardsBlock,
+		"",
+		tipsBlock,
+	)
+
+	// Center the whole block in the available space.
+	return lipgloss.Place(w, availH, lipgloss.Center, lipgloss.Center, content)
+}
+
+// renderBannerCompact renders a minimal banner for small terminals.
+func (m ShellModel) renderBannerCompact(_ int, availH int) string {
+	if availH < 6 {
+		availH = 6
+	}
+
+	title := bannerName.Render("PureWin") + "  " + welcomeVersionBadge.Render(m.Version)
+	desc := bannerDesc.Render("Deep clean and optimize your Windows.")
+	hint := lipgloss.NewStyle().Foreground(dim).Italic(true).
+		Render("Type / for commands " + ui.IconBullet + " /help for details")
+
+	content := lipgloss.JoinVertical(lipgloss.Center, title, desc, "", hint)
+	return lipgloss.Place(m.Width, availH, lipgloss.Center, lipgloss.Center, content)
+}
+
+// ─── Welcome Sub-Renderers ───────────────────────────────────────────────────
+
+// renderWelcomeBrand renders the mascot + large ASCII wordmark + tagline.
+func (m ShellModel) renderWelcomeBrand() string {
+	mascotStyle := lipgloss.NewStyle().Foreground(ui.ColorSecondary)
+	artStyle := lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true)
+
+	// Mascot (matches assets/logo.svg).
+	var mascotBlock strings.Builder
+	for _, line := range welcomeMascotLines {
+		mascotBlock.WriteString(mascotStyle.Render(line))
+		mascotBlock.WriteByte('\n')
+	}
+
+	// Wordmark.
+	var artBlock strings.Builder
+	for _, line := range welcomeBrandLines {
+		artBlock.WriteString(artStyle.Render(line))
+		artBlock.WriteByte('\n')
+	}
+
+	tagline := bannerDesc.Render("Deep clean and optimize your Windows.")
+
+	return lipgloss.JoinVertical(lipgloss.Center,
+		strings.TrimRight(mascotBlock.String(), "\n"),
+		"",
+		strings.TrimRight(artBlock.String(), "\n"),
+		"",
+		tagline,
+	)
+}
+
+// renderWelcomeInfoBar renders the hostname · admin · version status line.
+func (m ShellModel) renderWelcomeInfoBar() string {
+	sep := lipgloss.NewStyle().Foreground(ui.ColorBorder).Render(" " + ui.IconBullet + " ")
+
+	var parts []string
+
+	if m.Hostname != "" {
+		parts = append(parts, welcomeHostname.Render(m.Hostname))
+	}
+
+	if m.IsAdmin {
+		parts = append(parts, welcomeAdminBadge.Render(ui.IconDot+" admin"))
+	}
+
+	parts = append(parts, welcomeVersionBadge.Render("v"+m.Version))
+
+	return strings.Join(parts, sep)
+}
+
+// cmdGroup holds metadata for a category card on the welcome screen.
+type cmdGroup struct {
+	title string
+	color lipgloss.AdaptiveColor
+	style lipgloss.Style
+	cmds  []struct{ icon, name string }
+}
+
+// renderWelcomeCards renders the command category cards in a responsive grid.
+func (m ShellModel) renderWelcomeCards(w int) string {
+	groups := []cmdGroup{
+		{
+			title: "Cleanup",
+			color: ui.ColorSuccess,
+			style: welcomeCardBorderCleanup,
+			cmds: []struct{ icon, name string }{
+				{ui.IconTrash, "/clean"},
+				{ui.IconTrash, "/purge"},
+				{ui.IconFolder, "/installer"},
+			},
+		},
+		{
+			title: "System",
+			color: ui.ColorInfo,
+			style: welcomeCardBorderSystem,
+			cmds: []struct{ icon, name string }{
+				{ui.IconArrow, "/optimize"},
+				{ui.IconDot, "/status"},
+				{ui.IconFolder, "/uninstall"},
+			},
+		},
+		{
+			title: "Tools",
+			color: ui.ColorViolet,
+			style: welcomeCardBorderTools,
+			cmds: []struct{ icon, name string }{
+				{ui.IconDiamond, "/analyze"},
+				{ui.IconReload, "/update"},
+				{ui.IconHelp, "/help"},
+			},
+		},
+	}
+
+	// Determine card width based on terminal width.
+	cardInner := 16
+	if w >= 80 {
+		cardInner = 18
+	}
+
+	var cards []string
+	for _, g := range groups {
+		titleStyled := welcomeCardTitle.Foreground(g.color).Render(g.title)
+		var lines []string
+		lines = append(lines, titleStyled)
+		lines = append(lines, "")
+		for _, c := range g.cmds {
+			line := welcomeCmdIcon.Render(c.icon) + " " + welcomeCmdName.Render(c.name)
+			lines = append(lines, line)
+		}
+		body := lipgloss.JoinVertical(lipgloss.Left, lines...)
+		card := g.style.Width(cardInner).Render(body)
+		cards = append(cards, card)
+	}
+
+	// Layout: 3-col if wide enough, 2-col + 1 stacked, or single column.
+	if w >= 76 {
+		return lipgloss.JoinHorizontal(lipgloss.Top, cards[0], "  ", cards[1], "  ", cards[2])
+	}
+	if w >= 52 {
+		topRow := lipgloss.JoinHorizontal(lipgloss.Top, cards[0], "  ", cards[1])
+		return lipgloss.JoinVertical(lipgloss.Center, topRow, "", cards[2])
+	}
+	return lipgloss.JoinVertical(lipgloss.Center, cards[0], "", cards[1], "", cards[2])
+}
+
+// renderWelcomeTips renders the quick-start tips panel.
+func (m ShellModel) renderWelcomeTips(w int) string {
+	label := welcomeTipLabel.Render("Quick Start")
+
+	tips := []struct{ cmd, desc string }{
+		{"/", "see all commands"},
+		{"/clean --dry-run", "preview cleanup"},
+		{"/status", "live system monitor"},
+	}
+
+	var lines []string
+	lines = append(lines, label)
+	lines = append(lines, "")
+	for _, t := range tips {
+		line := ui.IconChevron + " " + welcomeTipCmd.Render(t.cmd) + "  " + welcomeTipDesc.Render(t.desc)
+		lines = append(lines, line)
+	}
+
+	body := lipgloss.JoinVertical(lipgloss.Left, lines...)
+
+	boxWidth := 42
+	if w < 50 {
+		boxWidth = w - 8
+	}
+	if boxWidth < 30 {
+		boxWidth = 30
+	}
+
+	return welcomeTipsBox.Width(boxWidth).Render(body)
 }
 
 // ─── Output Viewport ─────────────────────────────────────────────────────────

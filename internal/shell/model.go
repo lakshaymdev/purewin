@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -41,6 +42,7 @@ type ShellModel struct {
 	Height    int
 	IsAdmin   bool
 	Version   string
+	Hostname  string
 	scrollPos int // viewport scroll offset (0 = bottom)
 }
 
@@ -54,6 +56,8 @@ func NewShellModel(version string) ShellModel {
 
 	cmds := AllCommands()
 
+	hostname, _ := os.Hostname()
+
 	return ShellModel{
 		textInput:   ti,
 		completions: NewCompletions(cmds),
@@ -62,6 +66,7 @@ func NewShellModel(version string) ShellModel {
 		Height:      24,
 		IsAdmin:     core.IsElevated(),
 		Version:     version,
+		Hostname:    hostname,
 	}
 }
 

@@ -12,18 +12,24 @@ import (
 )
 
 // ─── ASCII Mascot Art ──────────────────────────────────────────────────────────
+// Matches the SVG logo (assets/logo.svg): a cute pet face with round ears,
+// dot eyes, and a snout with a nose.
 
-// moleLines holds the raw ASCII mascot art, rendered line-by-line during intro.
-var moleLines = []string{
-	`    ╭───────╮    `,
-	`    │ ◉   ◉ │    `,
-	`    │   ▽   │    `,
-	`    ╰──═══──╯    `,
-	`     ╱ ╲ ╱ ╲     `,
+// mascotLines holds the raw ASCII mascot art, rendered line-by-line during intro.
+var mascotLines = []string{
+	`    ╭●╮       ╭●╮    `,
+	`    ╰┬╯╭─────╮╰┬╯    `,
+	`     ╰─│ ◉ ◉ │─╯     `,
+	`       │ ╭─╮ │        `,
+	`       │ ╰▽╯ │        `,
+	`       ╰─────╯        `,
 }
 
 // groundLine is the terrain beneath the mascot.
-var groundLine = `   ─────────────   `
+var groundLine = `    ─────────────────  `
+
+// moleLines is kept as an alias for backward compatibility.
+var moleLines = mascotLines
 
 // brandBanner is the large ASCII wordmark.
 var brandLines = []string{
@@ -55,7 +61,7 @@ func enableVTProcessing() {
 
 // ─── Intro Animation ─────────────────────────────────────────────────────────
 
-// ShowMoleIntro displays an animated mole appearing line-by-line.
+// ShowMoleIntro displays the animated mascot appearing line-by-line.
 // Only runs in interactive terminals; silently returns otherwise.
 // Dolly pink for the mascot, charple purple for the ground.
 func ShowMoleIntro() {
@@ -73,7 +79,7 @@ func ShowMoleIntro() {
 	fmt.Print("\033[2J\033[H")
 
 	// Animate mascot line by line.
-	for _, line := range moleLines {
+	for _, line := range mascotLines {
 		fmt.Println(moleStyle.Render(line))
 		time.Sleep(80 * time.Millisecond)
 	}
@@ -151,7 +157,7 @@ func MoleArt() string {
 	groundStyle := lipgloss.NewStyle().Foreground(ColorPrimary)
 
 	var b strings.Builder
-	for _, line := range moleLines {
+	for _, line := range mascotLines {
 		b.WriteString(moleStyle.Render(line))
 		b.WriteByte('\n')
 	}

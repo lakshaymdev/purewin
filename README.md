@@ -1,18 +1,25 @@
-# PureWin
+<p align="center">
+  <img src="assets/logo.svg" alt="PureWin" width="96" height="96" />
+</p>
+
+<h1 align="center">PureWin</h1>
+
+<p align="center"><strong>Your Windows, purified.</strong></p>
+
+<p align="center">
+  <a href="https://github.com/lakshaymaurya-felt/purewin/actions/workflows/ci.yml"><img src="https://github.com/lakshaymaurya-felt/purewin/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/lakshaymaurya-felt/purewin"><img src="https://img.shields.io/github/go-mod/go-version/lakshaymaurya-felt/purewin" alt="Go Version" /></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+</p>
 
 ```
-    ╔═══════╗
-    ║ █████ ║
-    ║ █   █ ║
-    ║ █████ ║
-    ╚═══════╝
+    ╭●╮       ╭●╮
+    ╰┬╯╭─────╮╰┬╯
+     ╰─│ ◉ ◉ │─╯
+       │ ╭─╮ │
+       │ ╰▽╯ │
+       ╰─────╯
 ```
-
-**Your Windows, purified.**
-
-[![CI](https://github.com/lakshaymaurya-felt/purewin/actions/workflows/ci.yml/badge.svg)](https://github.com/lakshaymaurya-felt/purewin/actions/workflows/ci.yml)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/lakshaymaurya-felt/purewin)](https://github.com/lakshaymaurya-felt/purewin)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
@@ -26,20 +33,54 @@ Native. Fast. Uncompromising. This is Windows optimization done right.
 
 ---
 
+## Preview
+
+<p align="center">
+  <img src="assets/welcome.png" alt="PureWin Welcome Screen" width="720" />
+  <br />
+  <em>Welcome screen with mascot, command cards, and quick-start tips</em>
+</p>
+
+<p align="center">
+  <img src="assets/commands.png" alt="PureWin Command Autocomplete" width="720" />
+  <br />
+  <em>Interactive shell with slash-command autocomplete</em>
+</p>
+
+<p align="center">
+  <img src="assets/system-overview.png" alt="PureWin System Overview" width="720" />
+  <br />
+  <em>Real-time system overview — health score, CPU, memory, disk, and network at a glance</em>
+</p>
+
+<p align="center">
+  <img src="assets/cpu-monitor.png" alt="PureWin CPU Monitor" width="720" />
+  <br />
+  <em>Per-core CPU monitoring with live history charts</em>
+</p>
+
+<p align="center">
+  <img src="assets/disk-analyzer.png" alt="PureWin Disk Analyzer" width="720" />
+  <br />
+  <em>Interactive disk space analyzer — drill into directories, sort by size, delete on the spot</em>
+</p>
+
+---
+
 ## Features
 
-- **🧹 Deep System Cleanup** — Obliterate temp files, caches, logs, browser data, and dev tool artifacts
-- **🗑️ Complete App Removal** — Uninstall apps and wipe their registry entries, configs, and hidden remnants
-- **📊 Disk Space Analysis** — Interactive treemap visualization that shows exactly where your storage went
-- **⚡ System Optimization** — Refresh caches, restart services, optimize performance with one command
-- **📈 Real-Time Monitoring** — Live dashboard tracking CPU, memory, disk, network, GPU, and battery
-- **🔍 Installer Cleanup** — Hunt down and remove orphaned .exe, .msi, .msix files lurking in Downloads
-- **🛠️ Dev Tool Cleanup** — Purge build artifacts from node_modules, target/, .gradle, .nuget, and more
-- **🔒 Safety First** — Whitelist protection, dry-run mode, and NEVER_DELETE safeguards for critical paths
-- **🎨 Beautiful TUI** — Rich interactive menus powered by Bubble Tea that make cleanup feel like a game
-- **🔄 Self-Updating** — Check for and install updates directly from GitHub releases
-- **⚙️ PowerShell Completion** — Tab completion for all commands
-- **💬 Interactive Shell** — Persistent shell with slash-command autocomplete for power users
+- **× Deep System Cleanup** — Obliterate temp files, caches, logs, browser data, and dev tool artifacts
+- **× Complete App Removal** — Uninstall apps and wipe their registry entries, configs, and hidden remnants
+- **◇ Disk Space Analysis** — Interactive treemap visualization that shows exactly where your storage went
+- **→ System Optimization** — Refresh caches, restart services, optimize performance with one command
+- **● Real-Time Monitoring** — Live dashboard tracking CPU, memory, disk, network, GPU, and battery
+- **◆ Installer Cleanup** — Hunt down and remove orphaned .exe, .msi, .msix files lurking in Downloads
+- **× Dev Tool Cleanup** — Purge build artifacts from node_modules, target/, .gradle, .nuget, and more
+- **◈ Safety First** — Whitelist protection, dry-run mode, and NEVER_DELETE safeguards for critical paths
+- **◇ Beautiful TUI** — Rich interactive menus powered by Bubble Tea that make cleanup feel like a game
+- **○ Self-Updating** — Check for and install updates directly from GitHub releases
+- **→ PowerShell Completion** — Tab completion for all commands
+- **› Interactive Shell** — Persistent shell with slash-command autocomplete for power users
 
 ---
 
