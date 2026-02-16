@@ -6,11 +6,11 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
 )
 
 // ─── Shell Model ─────────────────────────────────────────────────────────────
-// The interactive shell is the primary TUI for WinMole. It provides a REPL
+// The interactive shell is the primary TUI for PureWin. It provides a REPL
 // with slash-command autocomplete, command history, and a scrollable output
 // area. Commands execute by exiting the shell (tea.Quit), letting the runner
 // loop dispatch the command, then relaunching the shell with preserved state.
@@ -238,7 +238,7 @@ func (m ShellModel) executeInput() (tea.Model, tea.Cmd) {
 	m.historyIdx = -1
 
 	// Record in output.
-	m.AppendOutput("wm \u276f " + raw)
+	m.AppendOutput("pw \u276f " + raw)
 
 	// Parse slash command.
 	if !strings.HasPrefix(raw, "/") {
@@ -304,7 +304,7 @@ func (m *ShellModel) handleInline(name string, args []string) {
 			m.showHelp()
 		}
 	case "version":
-		m.AppendOutput("  WinMole " + m.Version)
+		m.AppendOutput("  PureWin " + m.Version)
 	}
 }
 

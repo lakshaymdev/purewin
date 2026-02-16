@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
-	"github.com/lakshaymaurya-felt/winmole/pkg/whitelist"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/pkg/whitelist"
 )
 
 // ─── Developer Cache Definitions ─────────────────────────────────────────────

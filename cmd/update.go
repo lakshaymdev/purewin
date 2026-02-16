@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/config"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
-	"github.com/lakshaymaurya-felt/winmole/internal/update"
+	"github.com/lakshaymaurya-felt/purewin/internal/config"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/update"
 	"github.com/spf13/cobra"
 )
 
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update WinMole",
-	Long:  "Check for and install the latest version of WinMole from GitHub releases.",
+	Short: "Update PureWin",
+	Long:  "Check for and install the latest version of PureWin from GitHub releases.",
 	Run:   runUpdate,
 }
 
@@ -113,11 +113,11 @@ func runUpdate(cmd *cobra.Command, args []string) {
 
 	// Success message
 	fmt.Println()
-	fmt.Printf("  %s WinMole has been updated to version %s\n",
+	fmt.Printf("  %s PureWin has been updated to version %s\n",
 		ui.SuccessStyle().Render(ui.IconSuccess),
 		ui.SuccessStyle().Render(latestVersion))
 	fmt.Println()
-	fmt.Println(ui.MutedStyle().Render("  Restart WinMole to use the new version."))
+	fmt.Println(ui.MutedStyle().Render("  Restart PureWin to use the new version."))
 	fmt.Println()
 
 	// Update the background check cache

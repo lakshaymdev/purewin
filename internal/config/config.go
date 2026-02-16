@@ -10,7 +10,7 @@ import (
 
 const (
 	// AppName is the application directory name under user config.
-	AppName = "winmole"
+	AppName = "purewin"
 
 	// ConfigFileName is the configuration file name.
 	ConfigFileName = "config.json"
@@ -24,10 +24,10 @@ type Config struct {
 	// Version is the config schema version for future migrations.
 	Version string `json:"version"`
 
-	// ConfigDir is the base directory for all WinMole config files.
+	// ConfigDir is the base directory for all PureWin config files.
 	ConfigDir string `json:"config_dir"`
 
-	// CacheDir is the directory for WinMole's own cache data.
+	// CacheDir is the directory for PureWin's own cache data.
 	CacheDir string `json:"cache_dir"`
 
 	// LogFile is the path to the operations log.

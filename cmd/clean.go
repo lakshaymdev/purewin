@@ -9,11 +9,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/clean"
-	"github.com/lakshaymaurya-felt/winmole/internal/config"
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
-	"github.com/lakshaymaurya-felt/winmole/pkg/whitelist"
+	"github.com/lakshaymaurya-felt/purewin/internal/clean"
+	"github.com/lakshaymaurya-felt/purewin/internal/config"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/pkg/whitelist"
 )
 
 var cleanCmd = &cobra.Command{

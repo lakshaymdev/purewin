@@ -91,7 +91,7 @@ func (l *Logger) LogSession(command string) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	line := fmt.Sprintf("\n═══ [%s] SESSION START: wm %s ═══\n",
+	line := fmt.Sprintf("\n═══ [%s] SESSION START: pw %s ═══\n",
 		time.Now().Format(logTimeFormat),
 		command,
 	)

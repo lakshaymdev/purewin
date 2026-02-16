@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
-	"github.com/lakshaymaurya-felt/winmole/internal/installer"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/installer"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 	"github.com/spf13/cobra"
 )
 

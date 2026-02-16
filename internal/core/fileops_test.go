@@ -12,7 +12,7 @@ import (
 // would reject those paths. We try drive-root locations instead.
 func unprotectedTempDir(t *testing.T) string {
 	t.Helper()
-	candidates := []string{`C:\WinMoleTest`, `D:\WinMoleTest`, `E:\WinMoleTest`}
+	candidates := []string{`C:\PureWinTest`, `D:\PureWinTest`, `E:\PureWinTest`}
 	for _, base := range candidates {
 		if err := os.MkdirAll(base, 0o755); err != nil {
 			continue
@@ -117,7 +117,7 @@ func TestSafeDelete_ReturnsCorrectSize(t *testing.T) {
 func TestSafeDelete_NonExistentPath(t *testing.T) {
 	// Deleting a non-existent file under a safe (non-protected) path
 	// should return 0, nil.
-	size, err := SafeDelete(`C:\WinMoleNonExistent\does\not\exist.tmp`, false)
+	size, err := SafeDelete(`C:\PureWinNonExistent\does\not\exist.tmp`, false)
 	if err != nil {
 		t.Errorf("SafeDelete on non-existent path should not error, got: %v", err)
 	}

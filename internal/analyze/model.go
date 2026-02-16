@@ -6,7 +6,7 @@ import (
 	"runtime"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
 )
 
 // ─── Messages ────────────────────────────────────────────────────────────────

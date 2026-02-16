@@ -6,7 +6,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 )
 
 // ─── Charmtone Shell Palette ─────────────────────────────────────────────────
@@ -127,7 +127,7 @@ func (m ShellModel) renderBanner(w int) string {
 	}
 
 	s.WriteString("\n")
-	s.WriteString("  " + bannerName.Render("WinMole") +
+	s.WriteString("  " + bannerName.Render("PureWin") +
 		"  " + bannerVer.Render(m.Version) + "\n")
 	s.WriteString("  " + bannerDesc.Render("Deep clean and optimize your Windows.") + "\n")
 	s.WriteString("\n")
@@ -188,10 +188,10 @@ func (m ShellModel) renderOutput(w int) string {
 			line = string(runes[:lo]) + "..."
 		}
 
-		// Style echo lines (lines starting with "wm ❯") differently.
-		if strings.HasPrefix(line, "wm "+ui.IconPrompt+" ") {
-			cmd := strings.TrimPrefix(line, "wm "+ui.IconPrompt+" ")
-			echoLine := outputDimEcho.Render("wm") + " " +
+		// Style echo lines (lines starting with "pw ❯") differently.
+		if strings.HasPrefix(line, "pw "+ui.IconPrompt+" ") {
+			cmd := strings.TrimPrefix(line, "pw "+ui.IconPrompt+" ")
+			echoLine := outputDimEcho.Render("pw") + " " +
 				outputEcho.Render(ui.IconPrompt) + " " +
 				outputCmd.Render(cmd)
 			s.WriteString(echoLine + "\n")
@@ -340,7 +340,7 @@ func (m ShellModel) renderCompletions(w int) string {
 // ─── Prompt ──────────────────────────────────────────────────────────────────
 
 func (m ShellModel) renderPrompt(_ int) string {
-	label := promptLabel.Render("wm")
+	label := promptLabel.Render("pw")
 	symbol := promptSymbol.Render(" " + ui.IconPrompt + " ")
 	input := m.textInput.View()
 	return label + symbol + input + "\n"

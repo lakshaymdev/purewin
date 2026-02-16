@@ -1,4 +1,4 @@
-module github.com/lakshaymaurya-felt/winmole
+module github.com/lakshaymaurya-felt/purewin
 
 go 1.25.0
 

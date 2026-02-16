@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
 )
 
 const (
@@ -15,13 +15,13 @@ const (
 	serviceTimeout = 30 * time.Second
 )
 
-// ManagedService describes a Windows service that WinMole can manage.
+// ManagedService describes a Windows service that PureWin can manage.
 type ManagedService struct {
 	Name        string
 	DisplayName string
 }
 
-// GetManagedServices returns the list of services that WinMole can restart.
+// GetManagedServices returns the list of services that PureWin can restart.
 func GetManagedServices() []ManagedService {
 	return []ManagedService{
 		{Name: "Dnscache", DisplayName: "DNS Client"},

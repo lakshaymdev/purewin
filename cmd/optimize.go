@@ -5,9 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
-	"github.com/lakshaymaurya-felt/winmole/internal/optimize"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/optimize"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 )
 
 var optimizeCmd = &cobra.Command{

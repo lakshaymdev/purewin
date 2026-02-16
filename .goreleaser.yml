@@ -2,20 +2,20 @@ version: 2
 
 builds:
   - main: .
-    binary: wm
+    binary: pw
     goos: [windows]
     goarch: [amd64, arm64]
     ldflags:
       - -s -w
-      - -X github.com/lakshaymaurya-felt/winmole/cmd.appVersion={{.Version}}
-      - -X github.com/lakshaymaurya-felt/winmole/cmd.appCommit={{.ShortCommit}}
-      - -X github.com/lakshaymaurya-felt/winmole/cmd.appDate={{.Date}}
+      - -X github.com/lakshaymaurya-felt/purewin/cmd.appVersion={{.Version}}
+      - -X github.com/lakshaymaurya-felt/purewin/cmd.appCommit={{.ShortCommit}}
+      - -X github.com/lakshaymaurya-felt/purewin/cmd.appDate={{.Date}}
     env:
       - CGO_ENABLED=0
 
 archives:
   - format: zip
-    name_template: "winmole_{{.Version}}_{{.Os}}_{{.Arch}}"
+    name_template: "purewin_{{.Version}}_{{.Os}}_{{.Arch}}"
 
 checksum:
   name_template: 'checksums.txt'

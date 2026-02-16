@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
 )
 
 // ProjectArtifact represents a build artifact found in a project directory.

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/lakshaymaurya-felt/winmole/cmd"
+	"github.com/lakshaymaurya-felt/purewin/cmd"
 )
 
 // Version info set via ldflags at build time.

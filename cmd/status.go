@@ -7,7 +7,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/lakshaymaurya-felt/winmole/internal/status"
+	"github.com/lakshaymaurya-felt/purewin/internal/status"
 	"github.com/spf13/cobra"
 )
 

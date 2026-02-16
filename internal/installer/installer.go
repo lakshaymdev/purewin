@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
 	"golang.org/x/sys/windows"
 )
 

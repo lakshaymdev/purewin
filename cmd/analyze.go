@@ -6,8 +6,8 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/lakshaymaurya-felt/winmole/internal/analyze"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/analyze"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 	"github.com/spf13/cobra"
 )
 

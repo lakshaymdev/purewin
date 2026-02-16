@@ -20,7 +20,7 @@ type cacheEntry struct {
 	Root      *DirEntry `json:"root"`
 }
 
-// cacheDir returns the %APPDATA%\winmole directory, creating it if needed.
+// cacheDir returns the %APPDATA%\purewin directory, creating it if needed.
 func cacheDir() (string, error) {
 	appData := os.Getenv("APPDATA")
 	if appData == "" {
@@ -30,7 +30,7 @@ func cacheDir() (string, error) {
 		}
 		appData = filepath.Join(home, "AppData", "Roaming")
 	}
-	dir := filepath.Join(appData, "winmole")
+	dir := filepath.Join(appData, "purewin")
 	return dir, os.MkdirAll(dir, 0o755)
 }
 

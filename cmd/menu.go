@@ -7,8 +7,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 )
 
 // ─── Menu Item Definitions ───────────────────────────────────────────────────
@@ -30,8 +30,8 @@ var mainMenuItems = []mainMenuItem{
 	{icon: ui.IconDot, label: "Status", description: "Live system health monitor", command: "status"},
 	{icon: ui.IconTrash, label: "Purge", description: "Clean project build artifacts", command: "purge"},
 	{icon: ui.IconFolder, label: "Installers", description: "Find and remove old installers", command: "installer"},
-	{icon: ui.IconPending, label: "Update", description: "Check for WinMole updates", command: "update"},
-	{icon: ui.IconCross, label: "Remove", description: "Uninstall WinMole from this system", command: "remove"},
+	{icon: ui.IconPending, label: "Update", description: "Check for PureWin updates", command: "update"},
+	{icon: ui.IconCross, label: "Remove", description: "Uninstall PureWin from this system", command: "remove"},
 }
 
 // ─── Main Menu Model ─────────────────────────────────────────────────────────

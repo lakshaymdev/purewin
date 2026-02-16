@@ -7,9 +7,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
-	"github.com/lakshaymaurya-felt/winmole/internal/shell"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/shell"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 )
 
 var (
@@ -32,11 +32,10 @@ func SetVersionInfo(version, commit, date string) {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "wm",
+	Use:   "pw",
 	Short: "Deep clean and optimize your Windows",
-	Long: `WinMole - Deep clean and optimize your Windows.
+	Long: `PureWin - Deep clean and optimize your Windows.
 
-A Windows port of Mole (https://github.com/tw93/Mole).
 All-in-one toolkit for system cleanup, app uninstallation,
 disk analysis, system optimization, and live monitoring.`,
 }
@@ -54,7 +53,7 @@ func init() {
 	}
 
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Show detailed operation logs")
-	rootCmd.PersistentFlags().BoolVar(&runAdmin, "admin", false, "Re-launch WinMole with administrator privileges (UAC)")
+	rootCmd.PersistentFlags().BoolVar(&runAdmin, "admin", false, "Re-launch PureWin with administrator privileges (UAC)")
 
 	// PersistentPreRun: if --admin is set, re-launch elevated and exit.
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {

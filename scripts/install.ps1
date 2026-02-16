@@ -1,18 +1,18 @@
 #!/usr/bin/env pwsh
-# WinMole Installer for Windows
-# Usage: irm https://raw.githubusercontent.com/lakshaymaurya-felt/winmole/main/scripts/install.ps1 | iex
+# PureWin Installer for Windows
+# Usage: irm https://raw.githubusercontent.com/lakshaymaurya-felt/purewin/main/scripts/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "🔧 Installing WinMole..." -ForegroundColor Cyan
+Write-Host "🔧 Installing PureWin..." -ForegroundColor Cyan
 
 # Detect architecture
 $arch = if ([Environment]::Is64BitOperatingSystem) { "amd64" } else { "386" }
 Write-Host "   Detected architecture: $arch" -ForegroundColor Gray
 
 # Define install directory
-$installDir = Join-Path $env:LOCALAPPDATA "winmole"
-$binPath = Join-Path $installDir "wm.exe"
+$installDir = Join-Path $env:LOCALAPPDATA "purewin"
+$binPath = Join-Path $installDir "pw.exe"
 
 # Create install directory if it doesn't exist
 if (-not (Test-Path $installDir)) {
@@ -23,7 +23,7 @@ if (-not (Test-Path $installDir)) {
 # Fetch latest release info from GitHub API
 Write-Host "   Fetching latest release..." -ForegroundColor Gray
 try {
-    $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/lakshaymaurya-felt/winmole/releases/latest"
+    $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/lakshaymaurya-felt/purewin/releases/latest"
     $version = $releaseInfo.tag_name
     Write-Host "   Latest version: $version" -ForegroundColor Green
 } catch {
@@ -33,7 +33,7 @@ try {
 }
 
 # Find the correct asset for the detected architecture
-$assetName = "winmole_${version}_windows_${arch}.zip"
+$assetName = "purewin_${version}_windows_${arch}.zip"
 $asset = $releaseInfo.assets | Where-Object { $_.name -eq $assetName }
 
 if (-not $asset) {
@@ -45,7 +45,7 @@ if (-not $asset) {
 
 # Download the release archive
 $downloadUrl = $asset.browser_download_url
-$zipPath = Join-Path $env:TEMP "winmole_latest.zip"
+$zipPath = Join-Path $env:TEMP "purewin_latest.zip"
 
 Write-Host "   Downloading $assetName..." -ForegroundColor Gray
 try {
@@ -57,13 +57,13 @@ try {
     exit 1
 }
 
-# Extract wm.exe from the archive
-Write-Host "   Extracting wm.exe..." -ForegroundColor Gray
+# Extract pw.exe from the archive
+Write-Host "   Extracting pw.exe..." -ForegroundColor Gray
 try {
     Expand-Archive -Path $zipPath -DestinationPath $installDir -Force
     
-    # Find wm.exe in the extracted files (it might be in a subdirectory)
-    $extractedExe = Get-ChildItem -Path $installDir -Filter "wm.exe" -Recurse -File | Select-Object -First 1
+    # Find pw.exe in the extracted files (it might be in a subdirectory)
+    $extractedExe = Get-ChildItem -Path $installDir -Filter "pw.exe" -Recurse -File | Select-Object -First 1
     
     if ($extractedExe) {
         # Move to root of install directory if needed
@@ -72,7 +72,7 @@ try {
         }
         Write-Host "   Installed to: $binPath" -ForegroundColor Gray
     } else {
-        Write-Host "   Could not find wm.exe in the downloaded archive." -ForegroundColor Red
+        Write-Host "   Could not find pw.exe in the downloaded archive." -ForegroundColor Red
         exit 1
     }
 } catch {
@@ -99,9 +99,9 @@ if ($userPath -notlike "*$installDir*") {
 
 # Verify installation
 Write-Host ""
-Write-Host "✅ WinMole installed successfully!" -ForegroundColor Green
+Write-Host "✅ PureWin installed successfully!" -ForegroundColor Green
 Write-Host ""
-Write-Host "   Run 'wm' to get started" -ForegroundColor Cyan
+Write-Host "   Run 'pw' to get started" -ForegroundColor Cyan
 Write-Host "   Run 'wm --help' for available commands" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "   NOTE: You may need to restart your terminal for PATH changes to take effect." -ForegroundColor Yellow

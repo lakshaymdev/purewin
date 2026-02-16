@@ -23,7 +23,7 @@ func RequireAdmin(operation string) error {
 	}
 	return fmt.Errorf(
 		"operation %q requires administrator privileges\n"+
-			"  → Re-run with: wm %s --admin\n"+
+			"  → Re-run with: pw %s --admin\n"+
 			"  → Or right-click Terminal → Run as Administrator",
 		operation, operation,
 	)

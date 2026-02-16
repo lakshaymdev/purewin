@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lakshaymaurya-felt/winmole/pkg/whitelist"
+	"github.com/lakshaymaurya-felt/purewin/pkg/whitelist"
 )
 
 // ─── Browser Definitions ─────────────────────────────────────────────────────

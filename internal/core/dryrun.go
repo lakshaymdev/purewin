@@ -133,7 +133,7 @@ func (d *DryRunContext) TotalSizeUnlocked() int64 {
 }
 
 // ExportToFile writes the dry-run results to a text file.
-// Default location: %APPDATA%\winmole\clean-list.txt
+// Default location: %APPDATA%\purewin\clean-list.txt
 func (d *DryRunContext) ExportToFile(path string) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
@@ -144,7 +144,7 @@ func (d *DryRunContext) ExportToFile(path string) error {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("WinMole Dry Run Report — %s\n", time.Now().Format("2006-01-02 15:04:05")))
+	sb.WriteString(fmt.Sprintf("PureWin Dry Run Report — %s\n", time.Now().Format("2006-01-02 15:04:05")))
 	sb.WriteString(strings.Repeat("=", 60) + "\n\n")
 
 	summary := d.categorySummary()

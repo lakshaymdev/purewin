@@ -8,10 +8,10 @@ import (
 	"sort"
 	"time"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/config"
-	"github.com/lakshaymaurya-felt/winmole/internal/core"
-	"github.com/lakshaymaurya-felt/winmole/internal/purge"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/config"
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
+	"github.com/lakshaymaurya-felt/purewin/internal/purge"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -57,7 +57,7 @@ func runPurge(cmd *cobra.Command, args []string) {
 	if len(scanPaths) == 0 {
 		spinner.StopWithError("No scan paths configured")
 		fmt.Println()
-		fmt.Println(ui.MutedStyle().Render("  Run 'wm purge --paths' to configure scan directories."))
+		fmt.Println(ui.MutedStyle().Render("  Run 'pw purge --paths' to configure scan directories."))
 		os.Exit(1)
 	}
 

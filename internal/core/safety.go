@@ -7,8 +7,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/config"
-	"github.com/lakshaymaurya-felt/winmole/internal/envutil"
+	"github.com/lakshaymaurya-felt/purewin/internal/config"
+	"github.com/lakshaymaurya-felt/purewin/internal/envutil"
 )
 
 // IsSafePath returns true if the given path is NOT in the NEVER_DELETE list.

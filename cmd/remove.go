@@ -5,16 +5,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/config"
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
-	"github.com/lakshaymaurya-felt/winmole/internal/update"
+	"github.com/lakshaymaurya-felt/purewin/internal/config"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/update"
 	"github.com/spf13/cobra"
 )
 
 var removeCmd = &cobra.Command{
 	Use:   "remove",
-	Short: "Remove WinMole from system",
-	Long:  "Uninstall WinMole, remove configuration files and cached data.",
+	Short: "Remove PureWin from system",
+	Long:  "Uninstall PureWin, remove configuration files and cached data.",
 	Run:   runRemove,
 }
 
@@ -36,7 +36,7 @@ func runRemove(cmd *cobra.Command, args []string) {
 
 	// Show removal plan
 	fmt.Println()
-	fmt.Println(ui.SectionHeader("Remove WinMole", 50))
+	fmt.Println(ui.SectionHeader("Remove PureWin", 50))
 	fmt.Println()
 	fmt.Println(ui.WarningStyle().Render("  The following will be removed:"))
 	fmt.Println()
@@ -48,7 +48,7 @@ func runRemove(cmd *cobra.Command, args []string) {
 	fmt.Println()
 
 	// Danger confirmation
-	confirmed, err := ui.DangerConfirm("This will permanently delete WinMole and all its data")
+	confirmed, err := ui.DangerConfirm("This will permanently delete PureWin and all its data")
 	if err != nil {
 		fmt.Printf("%s Error: %v\n", ui.ErrorStyle().Render(ui.IconError), err)
 		os.Exit(1)
@@ -63,7 +63,7 @@ func runRemove(cmd *cobra.Command, args []string) {
 
 	// Perform removal
 	fmt.Println()
-	fmt.Println(ui.MutedStyle().Render("  Removing WinMole..."))
+	fmt.Println(ui.MutedStyle().Render("  Removing PureWin..."))
 	fmt.Println()
 
 	if err := update.SelfRemove(cfg.ConfigDir, cfg.CacheDir); err != nil {
@@ -72,7 +72,7 @@ func runRemove(cmd *cobra.Command, args []string) {
 	}
 
 	// Success message (this may not be seen if the process exits quickly)
-	fmt.Printf("  %s WinMole has been removed from your system.\n",
+	fmt.Printf("  %s PureWin has been removed from your system.\n",
 		ui.SuccessStyle().Render(ui.IconSuccess))
 	fmt.Println()
 	fmt.Println(ui.MutedStyle().Render("  Goodbye!"))

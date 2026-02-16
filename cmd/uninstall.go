@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
-	"github.com/lakshaymaurya-felt/winmole/internal/uninstall"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/uninstall"
 )
 
 var uninstallCmd = &cobra.Command{

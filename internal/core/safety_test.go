@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/config"
+	"github.com/lakshaymaurya-felt/purewin/internal/config"
 )
 
 // ---------------------------------------------------------------------------

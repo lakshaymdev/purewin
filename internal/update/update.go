@@ -15,7 +15,7 @@ import (
 
 const (
 	// GitHubAPIURL is the GitHub API endpoint for releases
-	GitHubAPIURL = "https://api.github.com/repos/lakshaymaurya-felt/winmole/releases/latest"
+	GitHubAPIURL = "https://api.github.com/repos/lakshaymaurya-felt/purewin/releases/latest"
 
 	// UpdateCheckCacheFile stores the last update check result
 	UpdateCheckCacheFile = "last_update_check.json"
@@ -151,8 +151,8 @@ func saveUpdateCache(path string, cache UpdateCheckCache) error {
 
 // getAssetNameForPlatform returns the expected asset name for the current platform.
 func getAssetNameForPlatform() string {
-	// Expected format: winmole_windows_amd64.exe, winmole_windows_arm64.exe, etc.
-	return fmt.Sprintf("winmole_%s_%s.exe", runtime.GOOS, runtime.GOARCH)
+	// Expected format: purewin_windows_amd64.exe, purewin_windows_arm64.exe, etc.
+	return fmt.Sprintf("purewin_%s_%s.exe", runtime.GOOS, runtime.GOARCH)
 }
 
 // DownloadUpdate downloads the update from the given URL to a temporary file.
@@ -160,7 +160,7 @@ func getAssetNameForPlatform() string {
 func DownloadUpdate(url string) (string, error) {
 	// Create temp file
 	tempDir := os.TempDir()
-	tempFile := filepath.Join(tempDir, "winmole_update.exe")
+	tempFile := filepath.Join(tempDir, "purewin_update.exe")
 
 	// Download
 	client := &http.Client{Timeout: 5 * time.Minute}

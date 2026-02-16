@@ -78,7 +78,7 @@ func AllCommands() []CmdDef {
 		},
 		{
 			Name:        "update",
-			Description: "Check for WinMole updates",
+			Description: "Check for PureWin updates",
 			Usage:       "/update [--force]",
 			Mode:        ExecCobra,
 		},
@@ -96,7 +96,7 @@ func AllCommands() []CmdDef {
 		},
 		{
 			Name:        "quit",
-			Description: "Exit WinMole",
+			Description: "Exit PureWin",
 			Usage:       "/quit",
 			Mode:        ExecQuit,
 		},

@@ -11,9 +11,9 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-// ─── ASCII Mole Art ──────────────────────────────────────────────────────────
+// ─── ASCII Mascot Art ──────────────────────────────────────────────────────────
 
-// moleLines holds the raw ASCII mole art, rendered line-by-line during intro.
+// moleLines holds the raw ASCII mascot art, rendered line-by-line during intro.
 var moleLines = []string{
 	`    ╭───────╮    `,
 	`    │ ◉   ◉ │    `,
@@ -22,16 +22,16 @@ var moleLines = []string{
 	`     ╱ ╲ ╱ ╲     `,
 }
 
-// groundLine is the terrain beneath the mole.
+// groundLine is the terrain beneath the mascot.
 var groundLine = `   ─────────────   `
 
 // brandBanner is the large ASCII wordmark.
 var brandLines = []string{
-	` __        ___       __  __       _      `,
-	` \ \      / (_)_ __ |  \/  | ___ | | ___ `,
-	`  \ \ /\ / /| | '_ \| |\/| |/ _ \| |/ _ \`,
-	`   \ V  V / | | | | | |  | | (_) | |  __/`,
-	`    \_/\_/  |_|_| |_|_|  |_|\___/|_|\___|`,
+	"  ____                  __        ___       ",
+	" |  _ \\ _   _ _ __ ___ \\ \\      / (_)_ __  ",
+	" | |_) | | | | '__/ _ \\ \\ \\ /\\ / /| | '_ \\ ",
+	" |  __/| |_| | | |  __/  \\ V  V / | | | | |",
+	" |_|    \\__,_|_|  \\___|   \\_/\\_/  |_|_| |_|",
 }
 
 // tagline sits below the brand banner.
@@ -57,7 +57,7 @@ func enableVTProcessing() {
 
 // ShowMoleIntro displays an animated mole appearing line-by-line.
 // Only runs in interactive terminals; silently returns otherwise.
-// Dolly pink for the mole body, charple purple for the ground.
+// Dolly pink for the mascot, charple purple for the ground.
 func ShowMoleIntro() {
 	if !isTerminal() {
 		return
@@ -72,7 +72,7 @@ func ShowMoleIntro() {
 	// Clear screen.
 	fmt.Print("\033[2J\033[H")
 
-	// Animate mole body line by line.
+	// Animate mascot line by line.
 	for _, line := range moleLines {
 		fmt.Println(moleStyle.Render(line))
 		time.Sleep(80 * time.Millisecond)
@@ -82,7 +82,7 @@ func ShowMoleIntro() {
 	fmt.Println(groundStyle.Render(groundLine))
 	time.Sleep(80 * time.Millisecond)
 
-	// Pause to admire the mole.
+	// Pause to admire the mascot.
 	time.Sleep(500 * time.Millisecond)
 
 	// Clear screen before continuing to main UI.
@@ -110,7 +110,7 @@ func ShowBrandBanner() string {
 	b.WriteByte('\n')
 
 	// URL / attribution.
-	b.WriteString(InfoStyle().Render("  https://github.com/lakshaymaurya-felt/winmole"))
+	b.WriteString(InfoStyle().Render("  https://github.com/lakshaymaurya-felt/purewin"))
 	b.WriteByte('\n')
 
 	return b.String()
@@ -142,9 +142,9 @@ func ShowCompletionBanner(freed int64, freeSpace int64) {
 	fmt.Println()
 }
 
-// ─── Mole Art (Static) ──────────────────────────────────────────────────────
+// ─── Mascot Art (Static) ──────────────────────────────────────────────────────
 
-// MoleArt returns the full mole ASCII art as a single styled string.
+// MoleArt returns the full mascot ASCII art as a single styled string.
 // Useful for embedding in help screens or about dialogs.
 func MoleArt() string {
 	moleStyle := lipgloss.NewStyle().Foreground(ColorSecondary)

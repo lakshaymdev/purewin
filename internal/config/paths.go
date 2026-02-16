@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/envutil"
+	"github.com/lakshaymaurya-felt/purewin/internal/envutil"
 )
 
 // CleanTarget represents a category of files that can be cleaned.

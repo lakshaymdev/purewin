@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/envutil"
+	"github.com/lakshaymaurya-felt/purewin/internal/envutil"
 )
 
 // defaultPatterns are the initial whitelist entries that protect common
@@ -75,7 +75,7 @@ func (w *Whitelist) Save() error {
 	}
 
 	var sb strings.Builder
-	sb.WriteString("# WinMole whitelist — one glob pattern per line\n")
+	sb.WriteString("# PureWin whitelist — one glob pattern per line\n")
 	sb.WriteString("# Lines starting with # are comments\n")
 	sb.WriteString("# Environment variables (e.g. %USERPROFILE%) are expanded at runtime\n\n")
 	for _, p := range w.patterns {

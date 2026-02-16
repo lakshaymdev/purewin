@@ -6,19 +6,19 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/ui"
+	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 	"github.com/spf13/cobra"
 )
 
 const (
-	completionMarkerStart = "# BEGIN WinMole completion"
-	completionMarkerEnd   = "# END WinMole completion"
+	completionMarkerStart = "# BEGIN PureWin completion"
+	completionMarkerEnd   = "# END PureWin completion"
 )
 
 var completionCmd = &cobra.Command{
 	Use:   "completion",
 	Short: "Generate PowerShell tab completion",
-	Long:  "Generate or install PowerShell tab completion for WinMole (wm).",
+	Long:  "Generate or install PowerShell tab completion for PureWin (wm).",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		install, _ := cmd.Flags().GetBool("install")
 		uninstall, _ := cmd.Flags().GetBool("uninstall")
@@ -74,7 +74,7 @@ func installCompletion() error {
 		existingContent = string(data)
 	}
 
-	// Remove any existing WinMole completion block
+	// Remove any existing PureWin completion block
 	existingContent = removeCompletionBlock(existingContent)
 
 	// Append the new completion block
@@ -100,7 +100,7 @@ func installCompletion() error {
 	return nil
 }
 
-// uninstallCompletion removes the WinMole completion block from the PowerShell profile
+// uninstallCompletion removes the PureWin completion block from the PowerShell profile
 func uninstallCompletion() error {
 	profilePath, err := getPowerShellProfilePath()
 	if err != nil {
@@ -119,9 +119,9 @@ func uninstallCompletion() error {
 
 	existingContent := string(data)
 
-	// Check if WinMole completion block exists
+	// Check if PureWin completion block exists
 	if !strings.Contains(existingContent, completionMarkerStart) {
-		fmt.Println(ui.WarningStyle().Render(ui.IconWarning + " WinMole completion not found in profile."))
+		fmt.Println(ui.WarningStyle().Render(ui.IconWarning + " PureWin completion not found in profile."))
 		return nil
 	}
 
@@ -167,7 +167,7 @@ func getPowerShellProfilePath() (string, error) {
 	return ps7Path, nil
 }
 
-// removeCompletionBlock removes the WinMole completion block from content
+// removeCompletionBlock removes the PureWin completion block from content
 func removeCompletionBlock(content string) string {
 	startIdx := strings.Index(content, completionMarkerStart)
 	if startIdx == -1 {

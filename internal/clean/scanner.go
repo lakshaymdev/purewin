@@ -6,8 +6,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/lakshaymaurya-felt/winmole/internal/config"
-	"github.com/lakshaymaurya-felt/winmole/pkg/whitelist"
+	"github.com/lakshaymaurya-felt/purewin/internal/config"
+	"github.com/lakshaymaurya-felt/purewin/pkg/whitelist"
 )
 
 // ─── Data Structures ─────────────────────────────────────────────────────────
