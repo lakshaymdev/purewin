@@ -102,7 +102,7 @@ Write-Host ""
 Write-Host "✅ PureWin installed successfully!" -ForegroundColor Green
 Write-Host ""
 Write-Host "   Run 'pw' to get started" -ForegroundColor Cyan
-Write-Host "   Run 'wm --help' for available commands" -ForegroundColor Cyan
+Write-Host "   Run 'pw --help' for available commands" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "   NOTE: You may need to restart your terminal for PATH changes to take effect." -ForegroundColor Yellow
 Write-Host ""

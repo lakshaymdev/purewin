@@ -18,7 +18,7 @@ const (
 var completionCmd = &cobra.Command{
 	Use:   "completion",
 	Short: "Generate PowerShell tab completion",
-	Long:  "Generate or install PowerShell tab completion for PureWin (wm).",
+	Long:  "Generate or install PowerShell tab completion for PureWin (pw).",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		install, _ := cmd.Flags().GetBool("install")
 		uninstall, _ := cmd.Flags().GetBool("uninstall")
