@@ -57,7 +57,7 @@ func enableVTProcessing() {
 
 // ShowMoleIntro displays an animated mole appearing line-by-line.
 // Only runs in interactive terminals; silently returns otherwise.
-// Dusty lavender for the mole body, espresso brown for the ground.
+// Dolly pink for the mole body, charple purple for the ground.
 func ShowMoleIntro() {
 	if !isTerminal() {
 		return
@@ -66,7 +66,7 @@ func ShowMoleIntro() {
 	// Ensure ANSI escape sequences work on Windows consoles.
 	enableVTProcessing()
 
-	moleStyle := lipgloss.NewStyle().Foreground(ColorAccent)
+	moleStyle := lipgloss.NewStyle().Foreground(ColorSecondary)
 	groundStyle := lipgloss.NewStyle().Foreground(ColorPrimary)
 
 	// Clear screen.
@@ -92,11 +92,11 @@ func ShowMoleIntro() {
 // ─── Brand Banner ────────────────────────────────────────────────────────────
 
 // ShowBrandBanner returns the full ASCII brand banner as a styled string,
-// ready to be printed. Warm brown wordmark, muted tagline, info-styled URL.
+// ready to be printed. Charple purple wordmark, muted tagline, info-styled URL.
 func ShowBrandBanner() string {
 	var b strings.Builder
 
-	nameStyle := lipgloss.NewStyle().Foreground(ColorBorderFocus).Bold(true)
+	nameStyle := lipgloss.NewStyle().Foreground(ColorPrimary).Bold(true)
 
 	// ASCII wordmark.
 	for _, line := range brandLines {
@@ -126,7 +126,7 @@ func ShowCompletionBanner(freed int64, freeSpace int64) {
 	// Build content
 	var content strings.Builder
 	content.WriteString(lipgloss.NewStyle().
-		Foreground(ColorPrimary).
+		Foreground(ColorSuccess).
 		Bold(true).
 		Render(IconCheck + " Cleanup Complete!"))
 	content.WriteString("\n\n")
@@ -147,7 +147,7 @@ func ShowCompletionBanner(freed int64, freeSpace int64) {
 // MoleArt returns the full mole ASCII art as a single styled string.
 // Useful for embedding in help screens or about dialogs.
 func MoleArt() string {
-	moleStyle := lipgloss.NewStyle().Foreground(ColorAccent)
+	moleStyle := lipgloss.NewStyle().Foreground(ColorSecondary)
 	groundStyle := lipgloss.NewStyle().Foreground(ColorPrimary)
 
 	var b strings.Builder

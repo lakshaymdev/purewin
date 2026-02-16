@@ -140,10 +140,10 @@ func (m mainMenuModel) View() string {
 
 		if isActive {
 			// Active: ▌ 1. ◆ Clean  Deep clean system caches...
-			cursor := lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true).Render(ui.IconBlock)
-			num := lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true).Render(number)
-			icon := lipgloss.NewStyle().Foreground(ui.ColorPrimary).Render(item.icon)
-			label := lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true).Render(item.label)
+			cursor := lipgloss.NewStyle().Foreground(ui.ColorHazy).Bold(true).Render(ui.IconBlock)
+			num := lipgloss.NewStyle().Foreground(ui.ColorHazy).Bold(true).Render(number)
+			icon := lipgloss.NewStyle().Foreground(ui.ColorHazy).Render(item.icon)
+			label := lipgloss.NewStyle().Foreground(ui.ColorHazy).Bold(true).Render(item.label)
 			desc := lipgloss.NewStyle().Foreground(ui.ColorTextDim).Render(item.description)
 			b.WriteString(fmt.Sprintf(" %s %s. %s %s  %s\n", cursor, num, icon, label, desc))
 		} else {

@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -18,7 +19,7 @@ var (
 	dimStyle    = lipgloss.NewStyle().Foreground(ui.ColorMuted)
 	subtleStyle = lipgloss.NewStyle().Foreground(ui.ColorTextDim)
 	accentStyle = lipgloss.NewStyle().Foreground(ui.ColorPrimary)
-	altStyle = lipgloss.NewStyle().Foreground(ui.ColorAccent)
+	altStyle    = lipgloss.NewStyle().Foreground(ui.ColorTeal)
 )
 
 // ─── Top-level renderer ─────────────────────────────────────────────────────
@@ -67,18 +68,20 @@ func (m StatusModel) renderTabs(w int) string {
 		Foreground(ui.ColorText).
 		Bold(true).
 		Border(lipgloss.NormalBorder(), false, false, true, false).
-		BorderForeground(ui.ColorBorderFocus).
+		BorderForeground(ui.ColorPrimary).
 		Padding(0, 2)
 
 	inactiveTab := lipgloss.NewStyle().
 		Foreground(ui.ColorMuted).
 		Padding(0, 2)
 
+	dotStyle := lipgloss.NewStyle().Foreground(ui.ColorSecondary)
+
 	var tabs []string
 	for i, name := range TabNames {
 		var label string
 		if Tab(i) == m.Tab {
-			label = fmt.Sprintf("%s %d·%s", ui.IconDot, i+1, name)
+			label = fmt.Sprintf("%s %d·%s", dotStyle.Render(ui.IconDot), i+1, name)
 			tabs = append(tabs, activeTab.Render(label))
 		} else {
 			label = fmt.Sprintf("  %d·%s", i+1, name)
@@ -154,33 +157,29 @@ func (m StatusModel) renderOverview(w int) string {
 	// ── Resources ──
 	s.WriteString("  " + ui.SectionHeader("Resources", w-4) + "\n")
 	barW := 20
-	sparkW := 30
+	graphW := 30
 	if w > 110 {
 		barW = 28
-		sparkW = 40
+		graphW = 40
 	} else if w > 90 {
 		barW = 24
-		sparkW = 35
+		graphW = 35
 	}
 
-	// CPU
+	// CPU with line graph
 	s.WriteString(renderMetricRow("CPU", met.CPU.TotalPercent, barW, ""))
 	if len(m.CPUHistory) > 1 {
-		s.WriteString(fmt.Sprintf("  %s  %s\n",
-			dimStyle.Render("       "),
-			renderSparkline(m.CPUHistory, sparkW, ui.ColorPrimary)))
+		s.WriteString(renderLineGraph(m.CPUHistory, graphW, 6, ui.ColorPrimary, ""))
 	}
 	s.WriteString("\n")
 
-	// Memory
+	// Memory with line graph
 	s.WriteString(renderMetricRow("MEM", met.Memory.UsedPercent, barW,
 		fmt.Sprintf("%s / %s",
 			core.FormatSize(int64(met.Memory.Used)),
 			core.FormatSize(int64(met.Memory.Total)))))
 	if len(m.MemHistory) > 1 {
-		s.WriteString(fmt.Sprintf("  %s  %s\n",
-			dimStyle.Render("       "),
-			renderSparkline(m.MemHistory, sparkW, ui.ColorAccent)))
+		s.WriteString(renderLineGraph(m.MemHistory, graphW, 6, ui.ColorSecondary, ""))
 	}
 	s.WriteString("\n")
 
@@ -196,20 +195,22 @@ func (m StatusModel) renderOverview(w int) string {
 	}
 
 	// Network
+	dlStyle := lipgloss.NewStyle().Foreground(ui.ColorTeal)
+	ulStyle := lipgloss.NewStyle().Foreground(ui.ColorAccent)
 	netDown := formatSpeed(met.Network.RecvSpeed)
 	netUp := formatSpeed(met.Network.SendSpeed)
 	s.WriteString(fmt.Sprintf("  %s  %s %s  %s %s\n",
 		dimStyle.Render("NET    "),
-		accentStyle.Render(ui.IconArrow),
+		dlStyle.Render(ui.IconArrow),
 		textStyle.Render(netDown),
-		altStyle.Render(ui.IconArrow),
+		ulStyle.Render(ui.IconArrow),
 		textStyle.Render(netUp)))
 
 	if len(m.NetRecvHistory) > 1 {
 		s.WriteString(fmt.Sprintf("  %s  %s  %s\n",
 			dimStyle.Render("       "),
-			renderSparklineU64(m.NetRecvHistory, sparkW/2, ui.ColorPrimary),
-			renderSparklineU64(m.NetSendHistory, sparkW/2, ui.ColorAccent)))
+			renderSparklineU64(m.NetRecvHistory, graphW/2, ui.ColorTeal),
+			renderSparklineU64(m.NetSendHistory, graphW/2, ui.ColorAccent)))
 	}
 
 	return s.String()
@@ -252,12 +253,9 @@ func (m StatusModel) renderCPU(w int) string {
 		fmt.Sprintf("  %s  %s  %s", totalLabel, ui.GradientBar(met.CPU.TotalPercent, barW), totalPct))
 	lines = append(lines, "")
 
-	// Sparkline history.
+	// Line graph history.
 	if len(m.CPUHistory) > 1 {
-		spark := renderSparkline(m.CPUHistory, 30, ui.ColorPrimary)
-		histLabel := altStyle.Render("  History  ")
-		lines = append(lines, histLabel+spark)
-		lines = append(lines, "")
+		lines = append(lines, renderLineGraph(m.CPUHistory, 40, 8, ui.ColorPrimary, "CPU History"))
 	}
 
 	// ── Per Core ──
@@ -299,12 +297,9 @@ func (m StatusModel) renderMemory(w int) string {
 			mp.Render(fmt.Sprintf("%5.1f%%", met.Memory.UsedPercent))))
 	lines = append(lines, "")
 
-	// Sparkline history.
+	// Line graph history.
 	if len(m.MemHistory) > 1 {
-		spark := renderSparkline(m.MemHistory, 30, ui.ColorAccent)
-		histLabel := altStyle.Render("  History  ")
-		lines = append(lines, histLabel+spark)
-		lines = append(lines, "")
+		lines = append(lines, renderLineGraph(m.MemHistory, 40, 8, ui.ColorSecondary, "Memory History"))
 	}
 	lines = append(lines,
 		fmt.Sprintf("  %s  %s", ml.Render("Total     "), mv.Render(core.FormatSize(int64(met.Memory.Total)))))
@@ -361,8 +356,8 @@ func (m StatusModel) renderDisk(w int) string {
 	}
 
 	lines = append(lines, "")
-	rdLabel := accentStyle.Render(ui.IconArrow + " Read")
-	wrLabel := altStyle.Render(ui.IconArrow + " Write")
+	rdLabel := lipgloss.NewStyle().Foreground(ui.ColorTeal).Render(ui.IconArrow + " Read")
+	wrLabel := lipgloss.NewStyle().Foreground(ui.ColorWarning).Render(ui.IconArrow + " Write")
 	lines = append(lines,
 		fmt.Sprintf("  %s   %s   %s  %s",
 			rdLabel, dv.Render(core.FormatSize(int64(met.Disk.ReadBytes))),
@@ -375,17 +370,19 @@ func (m StatusModel) renderDisk(w int) string {
 
 func (m StatusModel) renderNetwork(w int) string {
 	met := m.Metrics
+	dlStyle := lipgloss.NewStyle().Foreground(ui.ColorTeal)
+	ulStyle := lipgloss.NewStyle().Foreground(ui.ColorAccent)
 
 	var lines []string
 	lines = append(lines, "")
 
 	lines = append(lines,
 		fmt.Sprintf("  %s %s  %s",
-			accentStyle.Render(ui.IconArrow), accentStyle.Render("Download"),
+			dlStyle.Render(ui.IconArrow), dlStyle.Render("Download"),
 			textStyle.Render(formatSpeed(met.Network.RecvSpeed))))
 	lines = append(lines,
 		fmt.Sprintf("  %s %s    %s",
-			altStyle.Render(ui.IconArrow), altStyle.Render("Upload"),
+			ulStyle.Render(ui.IconArrow), ulStyle.Render("Upload"),
 			textStyle.Render(formatSpeed(met.Network.SendSpeed))))
 
 	lines = append(lines, "")
@@ -398,9 +395,9 @@ func (m StatusModel) renderNetwork(w int) string {
 	if len(m.NetRecvHistory) > 1 {
 		lines = append(lines, "")
 		lines = append(lines,
-			accentStyle.Render("  "+ui.IconArrow+" ")+renderSparklineU64(m.NetRecvHistory, 30, ui.ColorPrimary))
+			dlStyle.Render("  "+ui.IconArrow+" ")+renderSparklineU64(m.NetRecvHistory, 30, ui.ColorTeal))
 		lines = append(lines,
-			altStyle.Render("  "+ui.IconArrow+" ")+renderSparklineU64(m.NetSendHistory, 30, ui.ColorAccent))
+			ulStyle.Render("  "+ui.IconArrow+" ")+renderSparklineU64(m.NetSendHistory, 30, ui.ColorAccent))
 	}
 
 	return strings.Join(lines, "\n")
@@ -556,4 +553,150 @@ func formatSpeed(bps uint64) string {
 	default:
 		return fmt.Sprintf("%d B/s", bps)
 	}
+}
+
+// ─── Line Graph ──────────────────────────────────────────────────────────────
+
+// renderLineGraph renders a proper ASCII line graph with Y-axis labels, graph
+// area using block characters, and time-based X-axis markers.
+func renderLineGraph(data []float64, width, height int, color lipgloss.AdaptiveColor, label string) string {
+	if len(data) == 0 || width < 10 || height < 3 {
+		return ""
+	}
+
+	blocks := []rune{' ', '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'}
+	yAxisW := 6 // "100% │" = 6 chars
+	graphW := width - yAxisW
+	if graphW < 5 {
+		graphW = 5
+	}
+
+	// Resample data to fit graphW columns.
+	sampled := resampleData(data, graphW)
+
+	// Determine value range — for percentage data, cap at 100.
+	maxVal := 0.0
+	for _, v := range sampled {
+		if v > maxVal {
+			maxVal = v
+		}
+	}
+	if maxVal <= 0 {
+		maxVal = 1
+	}
+	if maxVal <= 100 {
+		maxVal = 100 // Use 100% scale for percentage data
+	}
+
+	graphStyle := lipgloss.NewStyle().Foreground(color)
+	axisStyle := dimStyle
+	borderStyle := lipgloss.NewStyle().Foreground(ui.ColorBorder)
+
+	var lines []string
+
+	// Optional label above graph.
+	if label != "" {
+		lines = append(lines, "  "+graphStyle.Bold(true).Render("  "+label))
+	}
+
+	// Render rows top-to-bottom (row 0 = top = highest value).
+	for row := 0; row < height; row++ {
+		// Y-axis label: show at top, middle, bottom.
+		var yLabel string
+		switch {
+		case row == 0:
+			yLabel = fmt.Sprintf("%3.0f%%", maxVal)
+		case row == height/2:
+			yLabel = fmt.Sprintf("%3.0f%%", maxVal/2)
+		case row == height-1:
+			yLabel = "  0%"
+		default:
+			yLabel = "    "
+		}
+
+		// Row threshold: what value range does this row represent?
+		rowTop := maxVal * float64(height-row) / float64(height)
+		rowBot := maxVal * float64(height-row-1) / float64(height)
+
+		var rowBuf strings.Builder
+		for _, v := range sampled {
+			if v >= rowTop {
+				// Full block.
+				rowBuf.WriteRune(blocks[8])
+			} else if v > rowBot {
+				// Partial block: map the fractional part into block indices.
+				frac := (v - rowBot) / (rowTop - rowBot)
+				idx := int(math.Round(frac * 8))
+				if idx < 0 {
+					idx = 0
+				}
+				if idx > 8 {
+					idx = 8
+				}
+				rowBuf.WriteRune(blocks[idx])
+			} else {
+				rowBuf.WriteRune(' ')
+			}
+		}
+
+		// Pad to graphW.
+		rowStr := rowBuf.String()
+		for len([]rune(rowStr)) < graphW {
+			rowStr += " "
+		}
+
+		lines = append(lines, fmt.Sprintf("  %s %s%s",
+			axisStyle.Render(yLabel),
+			borderStyle.Render("│"),
+			graphStyle.Render(rowStr)))
+	}
+
+	// X-axis bottom border.
+	xBorder := "  " + axisStyle.Render("     ") + borderStyle.Render("└"+strings.Repeat("─", graphW))
+	lines = append(lines, xBorder)
+
+	// X-axis time labels.
+	xLabels := make([]byte, graphW)
+	for i := range xLabels {
+		xLabels[i] = ' '
+	}
+	// Place "now" at the right edge.
+	nowLabel := "now"
+	if graphW >= len(nowLabel)+1 {
+		pos := graphW - len(nowLabel)
+		copy(xLabels[pos:], nowLabel)
+	}
+	// Place time markers at intervals.
+	if len(data) > 1 && graphW > 15 {
+		midIdx := graphW / 2
+		secPerSample := 1 // Typically 1 second per sample
+		midSec := (graphW - midIdx) * secPerSample
+		midLabel := fmt.Sprintf("-%ds", midSec)
+		if midIdx >= len(midLabel) {
+			start := midIdx - len(midLabel)/2
+			if start >= 0 && start+len(midLabel) < graphW-4 {
+				copy(xLabels[start:], midLabel)
+			}
+		}
+	}
+	lines = append(lines, "  "+axisStyle.Render("      ")+axisStyle.Render(string(xLabels)))
+
+	return strings.Join(lines, "\n") + "\n"
+}
+
+// resampleData reduces or pads data to exactly targetLen points.
+func resampleData(data []float64, targetLen int) []float64 {
+	n := len(data)
+	if n == 0 {
+		return make([]float64, targetLen)
+	}
+	if n <= targetLen {
+		// Pad with zeros on the left (older data = empty).
+		result := make([]float64, targetLen)
+		offset := targetLen - n
+		copy(result[offset:], data)
+		return result
+	}
+	// Downsample: take the last targetLen points.
+	return data[n-targetLen:]
 }

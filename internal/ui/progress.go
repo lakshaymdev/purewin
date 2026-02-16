@@ -24,7 +24,7 @@ type SpinnerModel struct {
 }
 
 // NewSpinner creates a SpinnerModel with the given initial message.
-// Uses the braille-dot spinner style in espresso brown.
+// Uses the braille-dot spinner style in charple purple.
 func NewSpinner(message string) SpinnerModel {
 	s := spinner.New()
 	s.Spinner = spinner.Spinner{
@@ -111,10 +111,10 @@ type ProgressBarModel struct {
 }
 
 // NewProgressBar creates a ProgressBarModel for the given total byte count.
-// The bar uses a caramel→espresso gradient matching the WinMole cappuccino palette.
+// The bar uses a charple→dolly gradient matching the charmtone palette.
 func NewProgressBar(total int64, label string) ProgressBarModel {
 	p := progress.New(
-		progress.WithScaledGradient(string(ColorSecondary.Dark), string(ColorPrimary.Dark)),
+		progress.WithScaledGradient(string(ColorPrimary.Dark), string(ColorSecondary.Dark)),
 		progress.WithWidth(40),
 		progress.WithoutPercentage(),
 	)

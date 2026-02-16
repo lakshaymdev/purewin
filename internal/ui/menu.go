@@ -153,17 +153,17 @@ func (m MenuModel) View() string {
 		if isActive {
 			// Active row: block cursor + number + bold title.
 			arrow := lipgloss.NewStyle().
-				Foreground(ColorPrimary).
+				Foreground(ColorHazy).
 				Bold(true).
 				Render(IconBlock)
 
 			num := lipgloss.NewStyle().
-				Foreground(ColorPrimary).
+				Foreground(ColorHazy).
 				Bold(true).
 				Render(number)
 
 			title := lipgloss.NewStyle().
-				Foreground(ColorPrimary).
+				Foreground(ColorHazy).
 				Bold(true).
 				Render(item.Title)
 

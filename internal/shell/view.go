@@ -9,24 +9,24 @@ import (
 	"github.com/lakshaymaurya-felt/winmole/internal/ui"
 )
 
-// ─── Vercel-Inspired Cappuccino Shell Palette ────────────────────────────────
-// Extends the global palette with shell-specific accent styles.
-// Designed to be competitive with charmbracelet/crush aesthetics.
+// ─── Charmtone Shell Palette ─────────────────────────────────────────────────
+// Extends the global palette with shell-specific violet accent styles.
+// Each screen gets its own accent color for visual variety.
 
-// Shell-specific accent colors — intentionally distinct from ui.Color* for the shell's unique visual identity.
+// Shell-specific accent colors — violet for shell's unique visual identity.
 var (
-	// Accent: dusty mauve — primary interactive elements.
-	accent = lipgloss.AdaptiveColor{Light: "#8c6f7e", Dark: "#b89aab"}
+	// Accent: Violet purple — primary interactive elements.
+	accent = lipgloss.AdaptiveColor{Light: "#9A48CC", Dark: "#C259FF"}
 
-	// Dim: warm gray — chrome, borders, secondary text.
-	dim = lipgloss.AdaptiveColor{Light: "#8a7e76", Dark: "#6b6360"}
+	// Dim: Oyster gray — chrome, borders, secondary text.
+	dim = lipgloss.AdaptiveColor{Light: "#858392", Dark: "#605F6B"}
 
 	// ── Prompt ──
 	promptSymbol = lipgloss.NewStyle().Foreground(accent).Bold(true)
 	promptLabel  = lipgloss.NewStyle().Foreground(ui.ColorText).Bold(true)
 
 	// ── Banner ──
-	bannerArt  = lipgloss.NewStyle().Foreground(accent)
+	bannerArt  = lipgloss.NewStyle().Foreground(ui.ColorSecondary)
 	bannerName = lipgloss.NewStyle().Foreground(ui.ColorPrimary).Bold(true)
 	bannerVer  = lipgloss.NewStyle().Foreground(ui.ColorMuted)
 	bannerDesc = lipgloss.NewStyle().Foreground(dim)
@@ -34,7 +34,7 @@ var (
 
 	// ── Completions Popup ──
 	compBorder       = lipgloss.NewStyle().Foreground(ui.ColorBorder)
-	compActiveRow    = lipgloss.NewStyle().Background(ui.ColorOverlay).Foreground(ui.ColorText).Bold(true) // wraps full padded row
+	compActiveRow    = lipgloss.NewStyle().Background(ui.ColorOverlay).Foreground(ui.ColorText).Bold(true)
 	compActiveName   = lipgloss.NewStyle().Background(ui.ColorOverlay).Foreground(ui.ColorText).Bold(true)
 	compActiveDesc   = lipgloss.NewStyle().Background(ui.ColorOverlay).Foreground(ui.ColorTextDim).Italic(true)
 	compInactiveName = lipgloss.NewStyle().Foreground(ui.ColorText)

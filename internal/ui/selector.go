@@ -309,7 +309,7 @@ func (m SelectorModel) View() string {
 		// Cursor indicator (crush-style thick bar focus).
 		if isActive {
 			line.WriteString(lipgloss.NewStyle().
-				Foreground(ColorPrimary).
+				Foreground(ColorBlue).
 				Bold(true).
 				Render(IconBlock + " "))
 		} else {
@@ -321,7 +321,7 @@ func (m SelectorModel) View() string {
 			line.WriteString(MutedStyle().Render(IconDash + " "))
 		} else if item.Selected {
 			line.WriteString(lipgloss.NewStyle().
-				Foreground(ColorPrimary).
+				Foreground(ColorBlue).
 				Bold(true).
 				Render(IconRadioOn + " "))
 		} else {
@@ -333,12 +333,12 @@ func (m SelectorModel) View() string {
 			line.WriteString(MutedStyle().Render(item.Label))
 		} else if isActive {
 			line.WriteString(lipgloss.NewStyle().
-				Foreground(ColorPrimary).
+				Foreground(ColorBlue).
 				Bold(true).
 				Render(item.Label))
 		} else if item.Selected {
 			line.WriteString(lipgloss.NewStyle().
-				Foreground(ColorPrimary).
+				Foreground(ColorBlue).
 				Render(item.Label))
 		} else {
 			line.WriteString(lipgloss.NewStyle().
@@ -351,7 +351,7 @@ func (m SelectorModel) View() string {
 			line.WriteString("  ")
 			sizeStyle := MutedStyle()
 			if item.Selected && !item.Disabled {
-				sizeStyle = lipgloss.NewStyle().Foreground(ColorPrimary)
+				sizeStyle = lipgloss.NewStyle().Foreground(ColorBlue)
 			}
 			line.WriteString(sizeStyle.Render(item.Size))
 		}

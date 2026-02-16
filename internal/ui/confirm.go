@@ -108,7 +108,7 @@ func ChooseOption(message string, options []string) (int, error) {
 	fmt.Printf("\n%s\n\n", headerStyle.Render(message))
 
 	// Numbered list.
-	numStyle := lipgloss.NewStyle().Foreground(ColorBorderFocus).Bold(true)
+	numStyle := lipgloss.NewStyle().Foreground(ColorPrimary).Bold(true)
 	optStyle := lipgloss.NewStyle().Foreground(ColorText)
 
 	for i, opt := range options {

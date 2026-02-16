@@ -9,49 +9,73 @@ import (
 )
 
 // ─── Color Palette ───────────────────────────────────────────────────────────
+// Charmtone-inspired vibrant palette (charmbracelet/x/exp/charmtone).
 // Adaptive colors degrade gracefully in terminals without 256-color support.
 // The Light variant targets light backgrounds; Dark targets dark backgrounds.
 
 var (
-	// Primary: Espresso Brown — success states, selected items, confirmations.
-	ColorPrimary = lipgloss.AdaptiveColor{Light: "#8b5e3c", Dark: "#c4956a"}
+	// Primary: Charple purple — selected items, focus states, active elements.
+	ColorPrimary = lipgloss.AdaptiveColor{Light: "#5040CC", Dark: "#6B50FF"}
 
-	// Secondary: Caramel — informational headers, links, active states.
-	ColorSecondary = lipgloss.AdaptiveColor{Light: "#a0724e", Dark: "#d4a574"}
+	// Secondary: Dolly pink — headers, highlights, interactive accents.
+	ColorSecondary = lipgloss.AdaptiveColor{Light: "#CC4FCC", Dark: "#FF60FF"}
 
-	// Warning: Warm Amber/Honey — caution messages, non-destructive alerts.
-	ColorWarning = lipgloss.AdaptiveColor{Light: "#c4873b", Dark: "#e8a857"}
+	// Success: Julep neon green — confirmations, check marks, completions.
+	ColorSuccess = lipgloss.AdaptiveColor{Light: "#00A080", Dark: "#00FFB2"}
 
-	// Error: Soft Coral/Terracotta — errors, danger zones, destructive operations.
-	ColorError = lipgloss.AdaptiveColor{Light: "#c9605a", Dark: "#e8877f"}
+	// Warning: Tang bright orange — caution messages, non-destructive alerts.
+	ColorWarning = lipgloss.AdaptiveColor{Light: "#CC7A48", Dark: "#FF985A"}
 
-	// Muted: Warm Taupe — disabled items, hints, secondary text.
-	ColorMuted = lipgloss.AdaptiveColor{Light: "#a89889", Dark: "#7d6e63"}
+	// Error: Cherry hot pink — errors, danger zones, destructive operations.
+	ColorError = lipgloss.AdaptiveColor{Light: "#CC2D70", Dark: "#FF388B"}
 
-	// Surface: Warm Dark Brown — subtle background tints for panels and cards.
-	ColorSurface = lipgloss.AdaptiveColor{Light: "#f5ede4", Dark: "#2c2118"}
+	// Info: Malibu blue — informational text, links, secondary actions.
+	ColorInfo = lipgloss.AdaptiveColor{Light: "#0084CC", Dark: "#00A4FF"}
 
-	// Text: Cream/Dark Chocolate — primary foreground text.
-	ColorText = lipgloss.AdaptiveColor{Light: "#3b2618", Dark: "#f2e8dc"}
+	// Muted: Squid — disabled items, hints, secondary text.
+	ColorMuted = lipgloss.AdaptiveColor{Light: "#858392", Dark: "#605F6B"}
 
-	// TextDim: Mocha — dimmed foreground for secondary content.
-	ColorTextDim = lipgloss.AdaptiveColor{Light: "#7d6e63", Dark: "#a89889"}
+	// Surface: BBQ — subtle background tints for panels and cards.
+	ColorSurface = lipgloss.AdaptiveColor{Light: "#F0EEF2", Dark: "#2D2C35"}
 
-	// Accent: Dusty Lavender — for tags, pills, special highlights.
-	ColorAccent = lipgloss.AdaptiveColor{Light: "#8c7aaa", Dark: "#a896c8"}
+	// Text: Salt/Pepper — primary foreground text.
+	ColorText = lipgloss.AdaptiveColor{Light: "#201F26", Dark: "#F1EFEF"}
 
-	// SurfaceDark: deeper brown — for card/panel backgrounds on dark terminals.
-	ColorSurfaceDark = lipgloss.AdaptiveColor{Light: "#ede4d8", Dark: "#231a12"}
+	// TextDim: Smoke — dimmed foreground for secondary content.
+	ColorTextDim = lipgloss.AdaptiveColor{Light: "#605F6B", Dark: "#BFBCC8"}
 
-	// Overlay: warm overlay — for popup/modal backgrounds.
-	ColorOverlay = lipgloss.AdaptiveColor{Light: "#e8ddd0", Dark: "#352a1f"}
+	// Accent: Bok mint — tags, pills, special highlights.
+	ColorAccent = lipgloss.AdaptiveColor{Light: "#40CCB0", Dark: "#68FFD6"}
 
-	// Border: warm gray — for panel borders.
-	ColorBorder = lipgloss.AdaptiveColor{Light: "#c4b8ac", Dark: "#4a4340"}
+	// SurfaceDark: Pepper — deeper background for cards.
+	ColorSurfaceDark = lipgloss.AdaptiveColor{Light: "#E8E6EC", Dark: "#201F26"}
 
-	// BorderFocus: brighter — for focused panel borders.
-	ColorBorderFocus = lipgloss.AdaptiveColor{Light: "#a0724e", Dark: "#c4956a"}
+	// Overlay: Iron — popup/modal backgrounds.
+	ColorOverlay = lipgloss.AdaptiveColor{Light: "#E0DEE4", Dark: "#4D4C57"}
 
+	// Border: Charcoal — panel borders.
+	ColorBorder = lipgloss.AdaptiveColor{Light: "#BFBCC8", Dark: "#3A3943"}
+
+	// BorderFocus: Charple — focused panel borders.
+	ColorBorderFocus = lipgloss.AdaptiveColor{Light: "#5040CC", Dark: "#6B50FF"}
+
+	// ── Per-Screen Accent Colors ──
+	// Each major view gets its own accent for visual variety.
+
+	// Teal: Turtle — status dashboard charts.
+	ColorTeal = lipgloss.AdaptiveColor{Light: "#08A8A6", Dark: "#0ADCD9"}
+
+	// Violet: for shell/prompt accents.
+	ColorViolet = lipgloss.AdaptiveColor{Light: "#9A48CC", Dark: "#C259FF"}
+
+	// Coral: for disk analyzer.
+	ColorCoral = lipgloss.AdaptiveColor{Light: "#CC4664", Dark: "#FF577D"}
+
+	// Blue: Sardine — for selector.
+	ColorBlue = lipgloss.AdaptiveColor{Light: "#3F98CC", Dark: "#4FBEFE"}
+
+	// Hazy: light purple — for menu.
+	ColorHazy = lipgloss.AdaptiveColor{Light: "#6F5FCC", Dark: "#8B75FF"}
 )
 
 // ─── Icon Constants ──────────────────────────────────────────────────────────
@@ -97,32 +121,32 @@ var SpinnerFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "�
 // Reusable lipgloss styles for the entire application. Each is a function
 // returning a fresh copy so callers can extend without mutating shared state.
 
-// SuccessStyle renders text in the primary espresso brown.
+// SuccessStyle renders text in julep green.
 func SuccessStyle() lipgloss.Style {
-	return lipgloss.NewStyle().Foreground(ColorPrimary)
+	return lipgloss.NewStyle().Foreground(ColorSuccess)
 }
 
-// ErrorStyle renders text in soft coral.
+// ErrorStyle renders text in cherry hot pink.
 func ErrorStyle() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(ColorError)
 }
 
-// WarningStyle renders text in warm amber.
+// WarningStyle renders text in tang orange.
 func WarningStyle() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(ColorWarning)
 }
 
-// InfoStyle renders text in caramel.
+// InfoStyle renders text in malibu blue.
 func InfoStyle() lipgloss.Style {
-	return lipgloss.NewStyle().Foreground(ColorSecondary)
+	return lipgloss.NewStyle().Foreground(ColorInfo)
 }
 
-// MutedStyle renders text in warm taupe.
+// MutedStyle renders text in squid gray.
 func MutedStyle() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(ColorMuted)
 }
 
-// HeaderStyle renders bold, caramel header text with a bottom margin.
+// HeaderStyle renders bold, dolly pink header text with a bottom margin.
 func HeaderStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Foreground(ColorSecondary).
@@ -322,11 +346,11 @@ func FormatSize(bytes int64) string {
 		size = fmt.Sprintf("%d B", bytes)
 	}
 
-	// Color-code by magnitude: large = warning, huge = error, small = muted.
+	// Color-code by magnitude: huge = cherry, large = orange, medium = blue, small = muted.
 	style := MutedStyle()
 	switch {
 	case bytes >= gib:
-		style = WarningStyle().Bold(true)
+		style = ErrorStyle().Bold(true)
 	case bytes >= 100*mib:
 		style = WarningStyle()
 	case bytes >= mib:

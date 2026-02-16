@@ -345,7 +345,7 @@ func runClean(cmd *cobra.Command, args []string) {
 	fmt.Println()
 
 	successBanner := lipgloss.NewStyle().
-		Foreground(ui.ColorPrimary).
+		Foreground(ui.ColorSuccess).
 		Bold(true)
 
 	fmt.Println(successBanner.Render(

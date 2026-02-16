@@ -11,13 +11,14 @@ import (
 // ─── Color tokens ────────────────────────────────────────────────────────────
 
 // Short aliases for readability in render functions.
+// Coral accent gives the analyzer its own visual identity.
 var (
-	clrDim = ui.ColorMuted
-	clrDir     = ui.ColorSecondary
-	clrFile    = ui.ColorText
-	clrOld     = ui.ColorMuted
-	clrLarge   = ui.ColorWarning
-	clrCursor  = ui.ColorPrimary
+	clrDim    = ui.ColorMuted
+	clrDir    = ui.ColorCoral  // coral for analyzer directories
+	clrFile   = ui.ColorText
+	clrOld    = ui.ColorMuted
+	clrLarge  = ui.ColorWarning
+	clrCursor = ui.ColorPrimary
 )
 
 // ─── Top-level view ──────────────────────────────────────────────────────────
@@ -45,7 +46,7 @@ func (m AnalyzeModel) renderView() string {
 func (m AnalyzeModel) renderHeader(w int) string {
 	title := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(ui.ColorSecondary).
+		Foreground(ui.ColorCoral).
 		Render("  " + ui.IconDiamond + " Disk Analyzer")
 
 	sizeStr := ui.FormatSize(m.current.Size)
@@ -67,7 +68,7 @@ func (m AnalyzeModel) renderHeader(w int) string {
 
 	return lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(ui.ColorBorderFocus).
+		BorderForeground(ui.ColorCoral).
 		Width(w - 2).
 		Render(inner)
 }
