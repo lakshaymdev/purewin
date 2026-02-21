@@ -45,19 +45,49 @@ const tagline = "Deep clean and optimize your Windows."
 
 // ─── Terminal Detection ──────────────────────────────────────────────────────
 
-// isTerminal returns true if stdout is a terminal (not piped/redirected).
-func isTerminal() bool {
+// vtEnabled tracks whether VT processing was successfully enabled.
+var vtEnabled bool
+
+// IsTerminal returns true if stdout is a terminal (not piped/redirected).
+func IsTerminal() bool {
 	return isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
 }
 
 // EnableVTProcessing enables Virtual Terminal Processing on the Windows console
 // so that ANSI escape codes work in cmd.exe and older PowerShell versions.
+// Also sets the console output code page to UTF-8 (65001) so Unicode characters
+// (box-drawing, braille spinners, icons) render correctly on all Windows 10+ consoles.
+// Returns true if VT processing was successfully enabled, false otherwise.
 // Safe to call multiple times; idempotent.
-func EnableVTProcessing() {
+func EnableVTProcessing() bool {
+	// Set console output to UTF-8 so Unicode characters render on all Windows
+	// consoles, including cmd.exe with the default OEM code page (437).
+	// Called unconditionally — safe on pipes and non-VT consoles.
+	windows.SetConsoleOutputCP(65001)
+
 	stdout := windows.Handle(os.Stdout.Fd())
 	var mode uint32
-	_ = windows.GetConsoleMode(stdout, &mode)
-	_ = windows.SetConsoleMode(stdout, mode|windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+
+	// If GetConsoleMode fails, stdout is not a console (piped/redirected).
+	if err := windows.GetConsoleMode(stdout, &mode); err != nil {
+		vtEnabled = false
+		return false
+	}
+
+	// Try to enable VT processing. On older Windows 10 builds (pre-1607),
+	// this may fail because ENABLE_VIRTUAL_TERMINAL_PROCESSING is not supported.
+	if err := windows.SetConsoleMode(stdout, mode|windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING); err != nil {
+		vtEnabled = false
+		return false
+	}
+
+	vtEnabled = true
+	return true
+}
+
+// IsVTEnabled returns whether VT processing was successfully enabled.
+func IsVTEnabled() bool {
+	return vtEnabled
 }
 
 // ─── Intro Animation ─────────────────────────────────────────────────────────
@@ -66,7 +96,7 @@ func EnableVTProcessing() {
 // Only runs in interactive terminals; silently returns otherwise.
 // Dolly pink for the mascot, charple purple for the ground.
 func ShowMoleIntro() {
-	if !isTerminal() {
+	if !IsTerminal() {
 		return
 	}
 
