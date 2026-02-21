@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/lakshaymaurya-felt/purewin/internal/config"
 	"github.com/lakshaymaurya-felt/purewin/internal/ui"
@@ -109,7 +110,18 @@ func runUpdate(cmd *cobra.Command, args []string) {
 	// Clean up temp file
 	_ = os.Remove(tempPath)
 
-	spinner.Stop("Update installed successfully")
+	// Verify the new binary exists
+	exePath, err := os.Executable()
+	if err != nil {
+		spinner.Stop("Update installed (could not verify binary path)")
+	} else {
+		exePath, _ = filepath.EvalSymlinks(exePath)
+		if _, err := os.Stat(exePath); err != nil {
+			spinner.StopWithError("Failed to verify new binary")
+			os.Exit(1)
+		}
+		spinner.Stop("Update installed successfully")
+	}
 
 	// Success message
 	fmt.Println()

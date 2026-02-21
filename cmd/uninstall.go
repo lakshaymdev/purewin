@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/lakshaymaurya-felt/purewin/internal/core"
 	"github.com/lakshaymaurya-felt/purewin/internal/ui"
 	"github.com/lakshaymaurya-felt/purewin/internal/uninstall"
 )
@@ -26,6 +27,15 @@ func init() {
 }
 
 func runUninstall(cmd *cobra.Command, args []string) {
+	// Check if running as administrator and warn if not.
+	if !core.IsElevated() {
+		fmt.Println(ui.WarningStyle().Render(
+			"  ⚠ Not running as administrator\n" +
+				"  Some apps may require elevated privileges to uninstall.\n" +
+				"  If uninstall fails, try: pw --admin uninstall"))
+		fmt.Println()
+	}
+
 	quiet, _ := cmd.Flags().GetBool("quiet")
 	showAll, _ := cmd.Flags().GetBool("show-all")
 	search, _ := cmd.Flags().GetString("search")

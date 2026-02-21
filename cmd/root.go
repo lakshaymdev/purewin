@@ -42,6 +42,11 @@ disk analysis, system optimization, and live monitoring.`,
 
 // Execute runs the root command.
 func Execute() error {
+	// Enable Windows Virtual Terminal Processing globally so ANSI escape
+	// codes render as colours in cmd.exe / PowerShell for ALL code paths
+	// (inline spinners, confirm dialogs, styled fmt.Print output, etc.).
+	ui.EnableVTProcessing()
+
 	return rootCmd.Execute()
 }
 

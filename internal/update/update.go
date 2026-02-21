@@ -222,8 +222,8 @@ func ApplyUpdate(tempPath string) error {
 		return fmt.Errorf("failed to copy new executable: %w", err)
 	}
 
-	// Schedule deletion of .old file on next run
-	// We'll handle this in the cleanup logic
+	// Schedule deletion of .old file using PowerShell
+	_ = scheduleFileDeletion(oldPath)
 
 	return nil
 }
@@ -294,27 +294,62 @@ func SelfRemove(configDir, cacheDir string) error {
 		}
 	}
 
-	// Schedule binary deletion using cmd.exe
+	// Schedule binary deletion using PowerShell
 	// We can't delete ourselves while running, so we spawn a process that waits
 	// and then deletes the binary
-	return scheduleBinaryDeletion(exePath)
+	return scheduleFileDeletion(exePath)
 }
 
-// scheduleBinaryDeletion spawns a process that waits and then deletes the binary.
-func scheduleBinaryDeletion(exePath string) error {
-	// Create a batch script to delete the executable after a delay
-	// cmd /c ping localhost -n 3 > nul && del "path"
-	cmd := exec.Command("cmd", "/c", "ping", "localhost", "-n", "3", ">", "nul", "&&", "del", "/f", "/q", exePath)
+// scheduleFileDeletion spawns a PowerShell process that waits and then deletes the file.
+// This is more reliable than the cmd.exe ping trick.
+func scheduleFileDeletion(filePath string) error {
+	// Use PowerShell to wait and delete. Escape single quotes and use -LiteralPath
+	// to prevent wildcard expansion on paths with special characters.
+	escaped := strings.ReplaceAll(filePath, "'", "''")
+	psCommand := fmt.Sprintf("Start-Sleep -Seconds 2; Remove-Item -LiteralPath '%s' -Force", escaped)
+	cmd := exec.Command("powershell", "-WindowStyle", "Hidden", "-Command", psCommand)
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 	cmd.Stdin = nil
 
 	// Start the process in detached mode
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to schedule binary deletion: %w", err)
+		return fmt.Errorf("failed to schedule file deletion: %w", err)
 	}
 
 	// Don't wait for the process to finish
+	return nil
+}
+
+// RemoveFromPath removes the PureWin install directory from the user's PATH environment variable.
+func RemoveFromPath(exePath string) error {
+	// Get the directory containing the executable
+	exeDir := filepath.Dir(exePath)
+
+	// PowerShell script to remove from PATH.
+	// Null-guard prevents clobbering an empty User PATH.
+	// TrimEnd('\') normalises trailing-backslash mismatches.
+	// Single-quote escaping prevents injection.
+	escaped := strings.ReplaceAll(exeDir, "'", "''")
+	psScript := fmt.Sprintf(`
+		$exeDir = '%s'
+		$path = [Environment]::GetEnvironmentVariable('Path', 'User')
+		if ($null -eq $path) { exit 0 }
+		$pathParts = $path -split ';'
+		$newPath = $pathParts | Where-Object {
+			$_ -ne '' -and $_.TrimEnd('\') -ine $exeDir.TrimEnd('\')
+		}
+		$newPathString = $newPath -join ';'
+		if ($newPathString -eq $path) { exit 0 }
+		[Environment]::SetEnvironmentVariable('Path', $newPathString, 'User')
+	`, escaped)
+
+	cmd := exec.Command("powershell", "-Command", psScript)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to remove from PATH: %w (output: %s)", err, string(output))
+	}
+
 	return nil
 }
 
@@ -325,7 +360,40 @@ func IsNewerVersion(current, newer string) bool {
 	current = strings.TrimPrefix(current, "v")
 	newer = strings.TrimPrefix(newer, "v")
 
-	// Simple string comparison works for most cases
-	// For production, consider using a proper semver library
-	return newer > current && newer != current
+	// Split versions by '.'
+	currentParts := strings.Split(current, ".")
+	newerParts := strings.Split(newer, ".")
+
+	// Compare each part as integers
+	maxLen := len(currentParts)
+	if len(newerParts) > maxLen {
+		maxLen = len(newerParts)
+	}
+
+	for i := 0; i < maxLen; i++ {
+		// Get current part (default to 0 if missing)
+		currentVal := 0
+		if i < len(currentParts) {
+			// Try to parse as integer, ignore non-numeric parts
+			fmt.Sscanf(currentParts[i], "%d", &currentVal)
+		}
+
+		// Get newer part (default to 0 if missing)
+		newerVal := 0
+		if i < len(newerParts) {
+			// Try to parse as integer, ignore non-numeric parts
+			fmt.Sscanf(newerParts[i], "%d", &newerVal)
+		}
+
+		// Compare this part
+		if newerVal > currentVal {
+			return true
+		} else if newerVal < currentVal {
+			return false
+		}
+		// If equal, continue to next part
+	}
+
+	// All parts are equal
+	return false
 }

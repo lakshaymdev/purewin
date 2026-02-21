@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/lakshaymaurya-felt/purewin/internal/core"
@@ -86,6 +87,21 @@ func ScanProjects(paths []string) ([]ProjectArtifact, error) {
 	}
 
 	return artifacts, nil
+}
+
+// isReparsePoint returns true if the path is a Windows junction or symlink.
+// Returns true on error (fail-closed) — safer for destructive operations.
+func isReparsePoint(path string) bool {
+	pathp, err := syscall.UTF16PtrFromString(path)
+	if err != nil {
+		return true // fail-closed: skip on error
+	}
+	attrs, err := syscall.GetFileAttributes(pathp)
+	if err != nil {
+		return true // fail-closed: skip on error
+	}
+	const fileAttributeReparsePoint = 0x0400
+	return attrs&fileAttributeReparsePoint != 0
 }
 
 // scanDirectory recursively scans a directory for project artifacts.
@@ -196,6 +212,12 @@ func scanDirectory(basePath, currentPath string, depth, maxDepth int, seenProjec
 		}
 
 		subPath := filepath.Join(currentPath, name)
+
+		// Skip junctions and symlinks — avoid infinite recursion and out-of-scope deletion.
+		if isReparsePoint(subPath) {
+			continue
+		}
+
 		_ = scanDirectory(basePath, subPath, depth+1, maxDepth, seenProjects, artifacts)
 	}
 

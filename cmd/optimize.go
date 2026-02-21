@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -43,13 +44,17 @@ func runOptimize(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Warn about admin privileges for services and maintenance.
+	// Fail fast: service and maintenance tasks require admin.
 	if !core.IsElevated() && !dryRun {
 		fmt.Println()
-		fmt.Println(ui.WarningStyle().Render(
-			fmt.Sprintf("  %s Most optimization tasks require administrator privileges.", ui.IconWarning)))
+		fmt.Println(ui.ErrorStyle().Render(
+			fmt.Sprintf("  %s  Optimization tasks require administrator privileges.", ui.IconError)))
 		fmt.Println(ui.MutedStyle().Render(
-			"  → Re-run in an elevated terminal, or use --dry-run to preview."))
+			"  → Re-run with: pw --admin optimize"))
+		fmt.Println(ui.MutedStyle().Render(
+			"  → Or use --dry-run to preview actions."))
+		fmt.Println()
+		os.Exit(1)
 	}
 
 	fmt.Println()

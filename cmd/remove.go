@@ -66,6 +66,15 @@ func runRemove(cmd *cobra.Command, args []string) {
 	fmt.Println(ui.MutedStyle().Render("  Removing PureWin..."))
 	fmt.Println()
 
+	// Remove from PATH first
+	if err := update.RemoveFromPath(exePath); err != nil {
+		// Non-fatal error, just warn the user
+		fmt.Printf("%s Warning: Failed to remove from PATH: %v\n",
+			ui.WarningStyle().Render(ui.IconWarning), err)
+		fmt.Println(ui.MutedStyle().Render("  You may need to manually remove PureWin from your PATH."))
+		fmt.Println()
+	}
+
 	if err := update.SelfRemove(cfg.ConfigDir, cfg.CacheDir); err != nil {
 		fmt.Printf("%s Removal failed: %v\n", ui.ErrorStyle().Render(ui.IconError), err)
 		os.Exit(1)

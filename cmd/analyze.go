@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -49,6 +51,11 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	// Parse exclude list.
 	exclude, _ := cmd.Flags().GetStringSlice("exclude")
 
+	// Parse depth and min-size flags.
+	depth, _ := cmd.Flags().GetInt("depth")
+	minSizeStr, _ := cmd.Flags().GetString("min-size")
+	minSize := parseMinSize(minSizeStr)
+
 	// Try loading from cache first.
 	root, err := analyze.LoadCache(target)
 	if err != nil {
@@ -87,10 +94,47 @@ func runAnalyze(cmd *cobra.Command, args []string) {
 	}
 
 	// Launch the TUI.
-	model := analyze.NewAnalyzeModel(root)
+	model := analyze.NewAnalyzeModel(root, depth, minSize)
 	p := tea.NewProgram(model, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+// parseMinSize parses a human-readable size string (e.g., "100MB", "1GB") into bytes.
+// Returns 0 if the string is empty or invalid.
+// parseMinSize parses a human-readable size string (e.g., "100MB", "1GB") into bytes.
+// Returns 0 if the string is empty or invalid. Supported suffixes: B, KB, MB, GB, TB.
+func parseMinSize(s string) int64 {
+	if s == "" {
+		return 0
+	}
+	s = strings.TrimSpace(strings.ToUpper(s))
+
+	var multiplier int64 = 1
+	if strings.HasSuffix(s, "TB") {
+		multiplier = 1024 * 1024 * 1024 * 1024
+		s = strings.TrimSuffix(s, "TB")
+	} else if strings.HasSuffix(s, "GB") {
+		multiplier = 1024 * 1024 * 1024
+		s = strings.TrimSuffix(s, "GB")
+	} else if strings.HasSuffix(s, "MB") {
+		multiplier = 1024 * 1024
+		s = strings.TrimSuffix(s, "MB")
+	} else if strings.HasSuffix(s, "KB") {
+		multiplier = 1024
+		s = strings.TrimSuffix(s, "KB")
+	} else if strings.HasSuffix(s, "B") {
+		s = strings.TrimSuffix(s, "B")
+	}
+
+	s = strings.TrimSpace(s)
+
+	// Use strconv.ParseFloat for strict parsing — rejects trailing chars like "100M".
+	value, err := strconv.ParseFloat(s, 64)
+	if err != nil || value < 0 {
+		return 0
+	}
+	return int64(value * float64(multiplier))
 }

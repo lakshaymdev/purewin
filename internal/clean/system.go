@@ -14,6 +14,18 @@ import (
 
 // ─── System Cache Scanning ───────────────────────────────────────────────────
 
+// getWindowsDir returns the Windows directory from WINDIR or SYSTEMROOT
+// environment variables, falling back to C:\Windows if not set.
+func getWindowsDir() string {
+	if windir := os.Getenv("WINDIR"); windir != "" {
+		return windir
+	}
+	if sysroot := os.Getenv("SYSTEMROOT"); sysroot != "" {
+		return sysroot
+	}
+	return `C:\Windows`
+}
+
 // ScanSystemCaches scans system-level caches that require admin privileges.
 // Returns nil immediately if the process is not elevated.
 func ScanSystemCaches(wl *whitelist.Whitelist) []CleanItem {
@@ -27,38 +39,46 @@ func ScanSystemCaches(wl *whitelist.Whitelist) []CleanItem {
 		description string
 	}
 
+	windir := getWindowsDir()
+
 	targets := []systemTarget{
 		{
 			name:        "WindowsTemp",
-			paths:       []string{`C:\Windows\Temp`},
+			paths:       []string{filepath.Join(windir, "Temp")},
 			description: "System temporary files",
 		},
 		{
 			name:        "WUCache",
-			paths:       []string{`C:\Windows\SoftwareDistribution\Download`},
+			paths:       []string{filepath.Join(windir, "SoftwareDistribution", "Download")},
 			description: "Windows Update download cache",
 		},
 		{
 			name:        "CBSLogs",
-			paths:       []string{`C:\Windows\Logs\CBS`},
+			paths:       []string{filepath.Join(windir, "Logs", "CBS")},
 			description: "CBS servicing logs",
 		},
 		{
 			name:        "DISMLogs",
-			paths:       []string{`C:\Windows\Logs\DISM`},
+			paths:       []string{filepath.Join(windir, "Logs", "DISM")},
 			description: "DISM operation logs",
 		},
 		{
 			name: "WERReports",
-			paths: []string{
-				`C:\ProgramData\Microsoft\Windows\WER\ReportQueue`,
-				`C:\ProgramData\Microsoft\Windows\WER\Temp`,
-			},
+			paths: func() []string {
+				pd := os.Getenv("ProgramData")
+				if pd == "" {
+					pd = `C:\ProgramData`
+				}
+				return []string{
+					filepath.Join(pd, "Microsoft", "Windows", "WER", "ReportQueue"),
+					filepath.Join(pd, "Microsoft", "Windows", "WER", "Temp"),
+				}
+			}(),
 			description: "Windows Error Reporting",
 		},
 		{
 			name:        "DeliveryOptimization",
-			paths:       []string{`C:\Windows\SoftwareDistribution\DeliveryOptimization`},
+			paths:       []string{filepath.Join(windir, "SoftwareDistribution", "DeliveryOptimization")},
 			description: "Delivery Optimization cache",
 		},
 	}
@@ -90,9 +110,10 @@ func ScanMemoryDumps() []CleanItem {
 	}
 
 	var items []CleanItem
+	windir := getWindowsDir()
 
 	// Full memory dump.
-	memDump := `C:\Windows\MEMORY.DMP`
+	memDump := filepath.Join(windir, "MEMORY.DMP")
 	if info, err := os.Stat(memDump); err == nil {
 		items = append(items, CleanItem{
 			Path:        memDump,
@@ -103,7 +124,7 @@ func ScanMemoryDumps() []CleanItem {
 	}
 
 	// Minidumps.
-	minidumpDir := `C:\Windows\Minidump`
+	minidumpDir := filepath.Join(windir, "Minidump")
 	if _, err := os.Stat(minidumpDir); err == nil {
 		dirItems := scanDirectory(minidumpDir, "system", "Minidump crash files", nil)
 		items = append(items, dirItems...)
@@ -120,16 +141,17 @@ func CleanMemoryDumps(dryRun bool) (int64, error) {
 	}
 
 	var totalFreed int64
+	windir := getWindowsDir()
 
 	// Full memory dump.
-	memDump := `C:\Windows\MEMORY.DMP`
+	memDump := filepath.Join(windir, "MEMORY.DMP")
 	freed, err := core.SafeDelete(memDump, dryRun)
 	if err == nil {
 		totalFreed += freed
 	}
 
 	// Minidumps.
-	minidumpDir := `C:\Windows\Minidump`
+	minidumpDir := filepath.Join(windir, "Minidump")
 	freed, _, err = core.SafeCleanDir(minidumpDir, "*", dryRun)
 	if err == nil {
 		totalFreed += freed
@@ -147,7 +169,8 @@ func CleanWindowsUpdate(dryRun bool) (int64, error) {
 		return 0, fmt.Errorf("cleaning Windows Update cache requires administrator privileges")
 	}
 
-	downloadDir := `C:\Windows\SoftwareDistribution\Download`
+	windir := getWindowsDir()
+	downloadDir := filepath.Join(windir, "SoftwareDistribution", "Download")
 
 	// Calculate size first.
 	size, _ := core.GetDirSize(downloadDir)
@@ -192,14 +215,23 @@ func runServiceCommand(action, service string) error {
 
 // ─── Windows.old ─────────────────────────────────────────────────────────────
 
-// WindowsOldSize returns the size of C:\Windows.old if it exists.
+// windowsOldDir returns the path to the Windows.old directory.
+func windowsOldDir() string {
+	sysDrive := os.Getenv("SYSTEMDRIVE")
+	if sysDrive == "" {
+		sysDrive = "C:"
+	}
+	return filepath.Join(sysDrive, "Windows.old")
+}
+
+// WindowsOldSize returns the size of Windows.old if it exists.
 // Returns 0 if not present or not elevated.
 func WindowsOldSize() int64 {
 	if !core.IsElevated() {
 		return 0
 	}
 
-	dir := `C:\Windows.old`
+	dir := windowsOldDir()
 	if _, err := os.Stat(dir); err != nil {
 		return 0
 	}
@@ -211,14 +243,14 @@ func WindowsOldSize() int64 {
 	return size
 }
 
-// CleanWindowsOld removes C:\Windows.old after requiring a DangerConfirm
+// CleanWindowsOld removes Windows.old after requiring a DangerConfirm
 // from the user. This is irreversible. Requires admin privileges.
 func CleanWindowsOld(dryRun bool) (int64, error) {
 	if !core.IsElevated() {
 		return 0, fmt.Errorf("removing Windows.old requires administrator privileges")
 	}
 
-	dir := `C:\Windows.old`
+	dir := windowsOldDir()
 	if _, err := os.Stat(dir); err != nil {
 		return 0, nil // Not present.
 	}
@@ -252,6 +284,9 @@ func CleanWindowsOld(dryRun bool) (int64, error) {
 // accessible without admin (user-level WER paths).
 func ScanWERUserReports(wl *whitelist.Whitelist) []CleanItem {
 	local := os.Getenv("LOCALAPPDATA")
+	if local == "" {
+		return nil
+	}
 
 	werPaths := []string{
 		filepath.Join(local, "Microsoft", "Windows", "WER", "ReportArchive"),

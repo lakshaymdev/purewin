@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -56,8 +57,11 @@ func runClean(cmd *cobra.Command, args []string) {
 	wlPath := filepath.Join(cfg.ConfigDir, "whitelist.txt")
 	wl, wlErr := whitelist.Load(wlPath)
 	if wlErr != nil {
-		fmt.Println(ui.WarningStyle().Render(
-			fmt.Sprintf("  %s Could not load whitelist: %v", ui.IconWarning, wlErr)))
+		// Only warn if the error is not "file not exists" (no whitelist configured is fine).
+		if !errors.Is(wlErr, os.ErrNotExist) {
+			fmt.Println(ui.WarningStyle().Render(
+				fmt.Sprintf("  %s Could not load whitelist: %v", ui.IconWarning, wlErr)))
+		}
 		wl = nil
 	}
 

@@ -3,7 +3,6 @@ package clean
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/lakshaymaurya-felt/purewin/pkg/whitelist"
 )
@@ -91,8 +90,9 @@ func ScanBrowserCaches(wl *whitelist.Whitelist) []CleanItem {
 // ─── Profile Discovery ───────────────────────────────────────────────────────
 
 // discoverChromiumProfiles returns all profile directories within a
-// Chromium-based browser's User Data directory. Profiles are named
-// "Default", "Profile 1", "Profile 2", etc.
+// Chromium-based browser's User Data directory. This includes "Default",
+// "Profile N", "Guest Profile", "System Profile", and any custom-named profiles.
+// A directory is considered a profile if it contains a "Cache" or "Code Cache" subdirectory.
 func discoverChromiumProfiles(userDataDir string) []string {
 	entries, err := os.ReadDir(userDataDir)
 	if err != nil {
@@ -104,11 +104,21 @@ func discoverChromiumProfiles(userDataDir string) []string {
 		if !e.IsDir() {
 			continue
 		}
-		name := e.Name()
-		// Chromium profiles: "Default", "Profile 1", "Profile 2", …
-		// Also "Guest Profile", "System Profile" may exist.
-		if name == "Default" || strings.HasPrefix(name, "Profile ") {
-			profiles = append(profiles, filepath.Join(userDataDir, name))
+
+		profilePath := filepath.Join(userDataDir, e.Name())
+
+		// Check if this directory contains cache folders (indicating it's a profile).
+		hasCache := false
+		for _, cacheSubdir := range []string{"Cache", "Code Cache"} {
+			cachePath := filepath.Join(profilePath, cacheSubdir)
+			if _, err := os.Stat(cachePath); err == nil {
+				hasCache = true
+				break
+			}
+		}
+
+		if hasCache {
+			profiles = append(profiles, profilePath)
 		}
 	}
 

@@ -31,6 +31,9 @@ func ScanDevCaches(wl *whitelist.Whitelist) []CleanItem {
 	home := os.Getenv("USERPROFILE")
 	local := os.Getenv("LOCALAPPDATA")
 	roaming := os.Getenv("APPDATA")
+	if home == "" || local == "" || roaming == "" {
+		return nil
+	}
 
 	caches := []devCacheDef{
 		{
@@ -160,6 +163,10 @@ func CleanGoModCache(dryRun bool) (int64, error) {
 	}
 
 	cacheDir := goModCachePath()
+	if cacheDir == "" {
+		return 0, nil // No cache directory found, skip silently.
+	}
+
 	size, _ := core.GetDirSize(cacheDir)
 
 	if dryRun {
@@ -176,13 +183,28 @@ func CleanGoModCache(dryRun bool) (int64, error) {
 
 // goModCachePath returns the Go module cache directory path.
 func goModCachePath() string {
-	// Check GOMODCACHE first, then GOPATH/pkg/mod/cache, then default.
+	// First, try running `go env GOMODCACHE` to get the actual cache location.
+	if _, err := exec.LookPath("go"); err == nil {
+		cmd := exec.Command("go", "env", "GOMODCACHE")
+		output, err := cmd.Output()
+		if err == nil {
+			modCache := strings.TrimSpace(string(output))
+			if modCache != "" {
+				if _, err := os.Stat(modCache); err == nil {
+					return modCache
+				}
+			}
+		}
+	}
+
+	// Check GOMODCACHE environment variable.
 	if modCache := os.Getenv("GOMODCACHE"); modCache != "" {
 		if _, err := os.Stat(modCache); err == nil {
 			return modCache
 		}
 	}
 
+	// Fall back to GOPATH/pkg/mod/cache.
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
 		gopath = filepath.Join(os.Getenv("USERPROFILE"), "go")
@@ -198,6 +220,69 @@ func goModCachePath() string {
 
 // ─── Docker Build Cache ──────────────────────────────────────────────────────
 
+// DockerBuildCacheSize returns the size of Docker build cache.
+// Returns 0 if Docker is not installed or the command fails.
+func DockerBuildCacheSize() int64 {
+	if _, err := exec.LookPath("docker"); err != nil {
+		return 0 // Docker not installed.
+	}
+
+	// Try to get build cache size via docker system df.
+	cmd := exec.Command("docker", "system", "df", "--format", "{{.Type}}\t{{.Size}}")
+	output, err := cmd.Output()
+	if err != nil {
+		return 0 // Docker command failed, return 0 gracefully.
+	}
+
+	// Parse output looking for "Build Cache" line.
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "Build Cache") {
+			// Format is "Build Cache\tX.YGB" or "Build Cache\tXMB"
+			parts := strings.Split(line, "\t")
+			if len(parts) >= 2 {
+				sizeStr := strings.TrimSpace(parts[1])
+				// Parse human-readable size (e.g., "1.5GB", "250MB")
+				size := parseDockerSize(sizeStr)
+				return size
+			}
+		}
+	}
+
+	return 0
+}
+
+// parseDockerSize converts Docker's human-readable size format to bytes.
+// Examples: "1.5GB" -> 1610612736, "250MB" -> 262144000
+func parseDockerSize(sizeStr string) int64 {
+	sizeStr = strings.TrimSpace(sizeStr)
+	if sizeStr == "" || sizeStr == "0B" {
+		return 0
+	}
+
+	var multiplier int64 = 1
+	if strings.HasSuffix(sizeStr, "GB") {
+		multiplier = 1024 * 1024 * 1024
+		sizeStr = strings.TrimSuffix(sizeStr, "GB")
+	} else if strings.HasSuffix(sizeStr, "MB") {
+		multiplier = 1024 * 1024
+		sizeStr = strings.TrimSuffix(sizeStr, "MB")
+	} else if strings.HasSuffix(sizeStr, "KB") {
+		multiplier = 1024
+		sizeStr = strings.TrimSuffix(sizeStr, "KB")
+	} else if strings.HasSuffix(sizeStr, "B") {
+		sizeStr = strings.TrimSuffix(sizeStr, "B")
+	}
+
+	// Parse the numeric part (may be float like "1.5")
+	var value float64
+	if _, err := fmt.Sscanf(sizeStr, "%f", &value); err != nil {
+		return 0
+	}
+
+	return int64(value * float64(multiplier))
+}
+
 // CleanDockerBuildCache runs `docker builder prune -af` to remove the
 // Docker build cache. Returns (0, nil) if Docker is not installed.
 // The caller should confirm with the user before invoking this.
@@ -207,9 +292,8 @@ func CleanDockerBuildCache(dryRun bool) (int64, error) {
 	}
 
 	if dryRun {
-		// Docker doesn't provide a simple way to query build cache size.
-		// Return 0 for dry-run; the user will see "Docker build cache" as a line item.
-		return 0, nil
+		// Return the actual cache size for dry-run.
+		return DockerBuildCacheSize(), nil
 	}
 
 	cmd := exec.Command("docker", "builder", "prune", "-af")

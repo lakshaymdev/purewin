@@ -4,6 +4,7 @@ import (
 	"os"
 	"runtime"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -233,11 +234,22 @@ func CollectMetrics(prevNet *NetworkMetrics, interval time.Duration) (*SystemMet
 		}
 		if prevNet != nil && interval > 0 {
 			secs := interval.Seconds()
-			if secs > 0 && nm.BytesSent >= prevNet.BytesSent {
-				nm.SendSpeed = uint64(float64(nm.BytesSent-prevNet.BytesSent) / secs)
-			}
-			if secs > 0 && nm.BytesRecv >= prevNet.BytesRecv {
-				nm.RecvSpeed = uint64(float64(nm.BytesRecv-prevNet.BytesRecv) / secs)
+			if secs > 0 {
+				// Calculate speed only if counters didn't wrap/reset.
+				// Cap at 10 Gbps (1.25 GB/s) to filter counter resets.
+				const maxBytesPerSec uint64 = 10 * 1024 * 1024 * 1024 / 8 // ~1.25 GB/s
+				if nm.BytesSent >= prevNet.BytesSent {
+					speed := uint64(float64(nm.BytesSent-prevNet.BytesSent) / secs)
+					if speed <= maxBytesPerSec {
+						nm.SendSpeed = speed
+					}
+				}
+				if nm.BytesRecv >= prevNet.BytesRecv {
+					speed := uint64(float64(nm.BytesRecv-prevNet.BytesRecv) / secs)
+					if speed <= maxBytesPerSec {
+						nm.RecvSpeed = speed
+					}
+				}
 			}
 		}
 
@@ -290,10 +302,30 @@ func CollectMetrics(prevNet *NetworkMetrics, interval time.Duration) (*SystemMet
 		if err != nil || len(controllers) == 0 {
 			return
 		}
+		// Pick the GPU with the most VRAM (discrete over integrated).
+		// WMI AdapterRAM is uint32, so ≥4 GB wraps to 0. If the "best"
+		// has 0 VRAM and others exist, prefer a non-Intel/Integrated entry.
+		best := controllers[0]
+		for _, c := range controllers[1:] {
+			if c.AdapterRAM > best.AdapterRAM {
+				best = c
+			}
+		}
+		if best.AdapterRAM == 0 && len(controllers) > 1 {
+			for _, c := range controllers {
+				nameLower := strings.ToLower(c.Name)
+				if !strings.Contains(nameLower, "intel") &&
+					!strings.Contains(nameLower, "integrated") &&
+					!strings.Contains(nameLower, "uhd") {
+					best = c
+					break
+				}
+			}
+		}
 		mu.Lock()
 		m.GPU = GPUInfo{
-			Name:       controllers[0].Name,
-			AdapterRAM: controllers[0].AdapterRAM,
+			Name:       best.Name,
+			AdapterRAM: best.AdapterRAM,
 		}
 		mu.Unlock()
 	}()

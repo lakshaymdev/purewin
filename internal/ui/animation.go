@@ -50,9 +50,10 @@ func isTerminal() bool {
 	return isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
 }
 
-// enableVTProcessing enables Virtual Terminal Processing on the Windows console
+// EnableVTProcessing enables Virtual Terminal Processing on the Windows console
 // so that ANSI escape codes work in cmd.exe and older PowerShell versions.
-func enableVTProcessing() {
+// Safe to call multiple times; idempotent.
+func EnableVTProcessing() {
 	stdout := windows.Handle(os.Stdout.Fd())
 	var mode uint32
 	_ = windows.GetConsoleMode(stdout, &mode)
@@ -70,7 +71,7 @@ func ShowMoleIntro() {
 	}
 
 	// Ensure ANSI escape sequences work on Windows consoles.
-	enableVTProcessing()
+	EnableVTProcessing()
 
 	moleStyle := lipgloss.NewStyle().Foreground(ColorSecondary)
 	groundStyle := lipgloss.NewStyle().Foreground(ColorPrimary)

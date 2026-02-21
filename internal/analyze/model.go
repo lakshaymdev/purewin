@@ -39,15 +39,19 @@ type AnalyzeModel struct {
 	confirmDelete bool // two-key delete: Backspace then Enter
 	quitting      bool
 	err           error
+	maxDepth      int   // 0 = unlimited
+	minSize       int64 // 0 = show all
 }
 
 // NewAnalyzeModel creates an AnalyzeModel rooted at the given scan result.
-func NewAnalyzeModel(root *DirEntry) AnalyzeModel {
+func NewAnalyzeModel(root *DirEntry, maxDepth int, minSize int64) AnalyzeModel {
 	return AnalyzeModel{
-		root:    root,
-		current: root,
-		width:   80,
-		height:  24,
+		root:     root,
+		current:  root,
+		width:    80,
+		height:   24,
+		maxDepth: maxDepth,
+		minSize:  minSize,
 	}
 }
 
@@ -182,15 +186,28 @@ func (m AnalyzeModel) visibleItems() []*DirEntry {
 	if m.current == nil {
 		return nil
 	}
-	if !m.largeOnly {
-		return m.current.Children
+
+	// Calculate current depth from root.
+	var currentDepth int
+	if m.maxDepth > 0 {
+		currentDepth = m.currentDepth()
 	}
-	const threshold int64 = 100 * 1024 * 1024 // 100 MiB
+
 	var out []*DirEntry
 	for _, c := range m.current.Children {
-		if c.Size >= threshold {
-			out = append(out, c)
+		// Filter by minimum size.
+		if m.minSize > 0 && c.Size < m.minSize {
+			continue
 		}
+		// Filter by size threshold (L key toggle).
+		if m.largeOnly && c.Size < 100*1024*1024 {
+			continue
+		}
+		// Filter by depth: hide directory children beyond maxDepth.
+		if m.maxDepth > 0 && c.IsDir && currentDepth >= m.maxDepth {
+			continue
+		}
+		out = append(out, c)
 	}
 	return out
 }
@@ -216,6 +233,11 @@ func (m *AnalyzeModel) removeEntry(path string) {
 			return
 		}
 	}
+}
+
+// currentDepth returns how many levels deep the current directory is from root.
+func (m AnalyzeModel) currentDepth() int {
+	return len(m.breadcrumb)
 }
 
 // openInExplorer opens the parent folder of a path with the item selected.
