@@ -32,6 +32,7 @@ const (
 	InstallerSquirrel
 	InstallerNSIS
 	InstallerInnoSetup
+	InstallerEdge
 	InstallerGenericEXE
 )
 
@@ -102,6 +103,11 @@ func detectInstallerType(cmdStr string) InstallerType {
 		return InstallerMSI
 	}
 
+	// Check for Microsoft Edge (setup.exe --uninstall --msedge).
+	if strings.Contains(lower, "setup.exe") && strings.Contains(lower, "--msedge") {
+		return InstallerEdge
+	}
+
 	// Check for Squirrel/Electron (Update.exe).
 	if strings.Contains(lower, "update.exe") {
 		return InstallerSquirrel
@@ -121,8 +127,25 @@ func detectInstallerType(cmdStr string) InstallerType {
 	return InstallerGenericEXE
 }
 
-// applySilentFlags adds installer-specific silent flags to the arguments if quiet mode is enabled.
+// applySilentFlags adds installer-specific silent/required flags to the arguments.
+// For most installers, silent flags are only added when quiet=true.
+// Exception: Edge ALWAYS needs --force-uninstall regardless of quiet mode.
 func applySilentFlags(args []string, installerType InstallerType, quiet bool) []string {
+	// Edge always needs --force-uninstall (not a silent flag — required for uninstall to work).
+	if installerType == InstallerEdge {
+		hasForce := false
+		for _, arg := range args {
+			if strings.EqualFold(arg, "--force-uninstall") {
+				hasForce = true
+				break
+			}
+		}
+		if !hasForce {
+			args = append(args, "--force-uninstall")
+		}
+		return args
+	}
+
 	if !quiet {
 		return args
 	}
@@ -180,6 +203,8 @@ func applySilentFlags(args []string, installerType InstallerType, quiet bool) []
 				args = append(args, flag)
 			}
 		}
+
+	// InstallerEdge is handled above (before the quiet check) — always needs --force-uninstall.
 
 	case InstallerGenericEXE:
 		// Try /S as the most common silent flag.
