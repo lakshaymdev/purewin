@@ -88,6 +88,13 @@ func RestartService(name string) error {
 		depCancel()
 	}
 
+	// Wait for ALL dependents to actually reach STOPPED state before touching
+	// the parent. sc stop returns immediately (just sends the signal), so
+	// dependents are typically still in STOP_PENDING at this point.
+	if len(dependents) > 0 {
+		waitForServicesStopped(dependents, 15*time.Second)
+	}
+
 	// Now stop the parent service.
 	if err := stopServiceWithRetry(name); err != nil {
 		return err
@@ -111,44 +118,76 @@ func RestartService(name string) error {
 
 // stopServiceWithRetry stops a service via sc stop, handling common error codes:
 //   - 1062 (ERROR_SERVICE_NOT_ACTIVE): already stopped, treat as success
-//   - 1051 (ERROR_DEPENDENT_SERVICES_RUNNING): dependents still stopping, retry after pause
+//   - 1051 (ERROR_DEPENDENT_SERVICES_RUNNING): dependents still stopping, retry with backoff
 func stopServiceWithRetry(name string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), serviceTimeout)
-	defer cancel()
+	const maxRetries = 3
+	delays := []time.Duration{2 * time.Second, 3 * time.Second, 5 * time.Second}
 
-	cmd := exec.CommandContext(ctx, "sc", "stop", name)
-	out, err := cmd.CombinedOutput()
-	if err == nil {
-		return nil
-	}
+	var lastOutput string
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		ctx, cancel := context.WithTimeout(context.Background(), serviceTimeout)
+		cmd := exec.CommandContext(ctx, "sc", "stop", name)
+		out, err := cmd.CombinedOutput()
+		cancel()
 
-	var exitErr *exec.ExitError
-	if !errors.As(err, &exitErr) {
-		return fmt.Errorf("failed to stop service %s: %w", name, err)
-	}
-
-	code := exitErr.ExitCode()
-	switch code {
-	case 1062:
-		// Already stopped — success.
-		return nil
-	case 1051:
-		// Dependents still stopping — wait and retry once.
-		time.Sleep(2 * time.Second)
-		retryCtx, retryCancel := context.WithTimeout(context.Background(), serviceTimeout)
-		defer retryCancel()
-		retryCmd := exec.CommandContext(retryCtx, "sc", "stop", name)
-		retryOut, retryErr := retryCmd.CombinedOutput()
-		if retryErr != nil {
-			var retryExit *exec.ExitError
-			if errors.As(retryErr, &retryExit) && retryExit.ExitCode() == 1062 {
-				return nil // Stopped between our attempts.
-			}
-			return fmt.Errorf("failed to stop service %s (dependents still running): %s", name, strings.TrimSpace(string(retryOut)))
+		if err == nil {
+			return nil
 		}
-		return nil
-	default:
-		return fmt.Errorf("failed to stop service %s: %s", name, strings.TrimSpace(string(out)))
+
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) {
+			return fmt.Errorf("failed to stop service %s: %w", name, err)
+		}
+
+		code := exitErr.ExitCode()
+		switch code {
+		case 1062:
+			// Already stopped — success.
+			return nil
+		case 1051:
+			// Dependents still stopping — retry after delay if attempts remain.
+			lastOutput = strings.TrimSpace(string(out))
+			if attempt < maxRetries {
+				time.Sleep(delays[attempt])
+				continue
+			}
+			return fmt.Errorf("failed to stop service %s (dependents still running after %d retries): %s", name, maxRetries, lastOutput)
+		default:
+			return fmt.Errorf("failed to stop service %s: %s", name, strings.TrimSpace(string(out)))
+		}
+	}
+
+	return fmt.Errorf("failed to stop service %s: %s", name, lastOutput)
+}
+
+// waitForServicesStopped polls until all named services reach STOPPED state or timeout.
+// Best effort — returns silently if services don't stop in time (caller will
+// handle the 1051 retry). Polling interval: 500ms.
+func waitForServicesStopped(names []string, timeout time.Duration) {
+	deadline := time.Now().Add(timeout)
+	remaining := make(map[string]bool, len(names))
+	for _, n := range names {
+		remaining[n] = true
+	}
+
+	for time.Now().Before(deadline) && len(remaining) > 0 {
+		for name := range remaining {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			cmd := exec.CommandContext(ctx, "sc", "query", name)
+			out, err := cmd.CombinedOutput()
+			cancel()
+			if err != nil {
+				// Query failed — service may not exist or already stopped.
+				delete(remaining, name)
+				continue
+			}
+			if strings.Contains(strings.ToUpper(string(out)), "STOPPED") {
+				delete(remaining, name)
+			}
+		}
+		if len(remaining) > 0 {
+			time.Sleep(500 * time.Millisecond)
+		}
 	}
 }
 
